@@ -39,6 +39,8 @@ set(ENCLAVE_SOURCES
 # Source files - Crypto modules
 set(CRYPTO_SOURCES
     src/crypto/post_quantum_crypto.cpp
+    src/crypto/quantum_key_distribution.cpp
+    src/crypto/zero_knowledge_proofs.cpp
 )
 
 # Source files - Network modules

@@ -1,12 +1,12 @@
 /**
- * Encrypted P2P Chat v14.0
+ * Encrypted P2P Chat v15.0
  * Next-Generation Web3 Communication Suite
- * Ultimate Modular Architecture
+ * Complete Modular Architecture
  * 
- * v14.0 Features:
- * - All v13 modules PLUS:
- * - Steganography (LSB)
- * - Video Encryption (H.264)
+ * v15.0 Features:
+ * - All v14 modules PLUS:
+ * - Quantum Key Distribution (BB84)
+ * - Zero-Knowledge Proofs
  * 
  * Author: Olivier Robert-Duboille
  */
@@ -26,6 +26,8 @@
 #include "include/dao_governance.h"
 #include "include/tls_handshake.h"
 #include "include/post_quantum_crypto.h"
+#include "include/quantum_key_distribution.h"
+#include "include/zero_knowledge_proofs.h"
 #include "include/anonymous_routing.h"
 #include "include/secure_file_transfer.h"
 #include "include/blockchain_identity.h"
@@ -38,11 +40,11 @@ int main() {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     
     std::cout << R"(
-    ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-    ║     Encrypted P2P Chat v14.0 - Ultimate Web3 Communication Suite                                                                                                   ║
-    ║     SD-JWT • MPC • FHE • DAO • PQC • DID • Voice/Video Encryption • Steganography • Group Chat • Anonymous Routing                                            ║
-    ║     Author: Olivier Robert-Duboille                                                                                                                                ║
-    ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+    ╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+    ║     Encrypted P2P Chat v15.0 - Complete Web3 Suite with Quantum Security                                                                                                                            ║
+    ║     SD-JWT • MPC • FHE • DAO • PQC • QKD (BB84) • ZK Proofs • DID • Voice/Video • Steganography • Group Chat                                                                                ║
+    ║     Author: Olivier Robert-Duboille                                                                                                                                                                        ║
+    ╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
     )" << std::endl;
     
     // Initialize all modules
@@ -58,6 +60,8 @@ int main() {
     std::unique_ptr<Crypto::DAOGovernance> dao(new Crypto::DAOGovernance());
     std::unique_ptr<Crypto::QRTLSHandshake> tls_handshake(new Crypto::QRTLSHandshake());
     std::unique_ptr<Crypto::PostQuantumCrypto> pq_crypto(new Crypto::PostQuantumCrypto());
+    std::unique_ptr<Crypto::QuantumKeyDistribution> qkd(new Crypto::QuantumKeyDistribution());
+    std::unique_ptr<Crypto::ZeroKnowledgeProofs> zkp(new Crypto::ZeroKnowledgeProofs());
     std::unique_ptr<Crypto::AnonymousRouting> anon_routing(new Crypto::AnonymousRouting());
     std::unique_ptr<Crypto::SecureFileTransfer> file_transfer(new Crypto::SecureFileTransfer());
     std::unique_ptr<Crypto::BlockchainIdentity> blockchain_id(new Crypto::BlockchainIdentity());
@@ -66,63 +70,67 @@ int main() {
     std::unique_ptr<Crypto::Steganography> steganography(new Crypto::Steganography());
     std::unique_ptr<Crypto::VideoEncryption> video_enc(new Crypto::VideoEncryption());
     
-    std::cout << "\n=== v14.0 Ultimate Suite Demo ===" << std::endl;
+    std::cout << "\n=== v15.0 Complete Suite Demo ===" << std::endl;
     
-    // 1. Steganography
+    // 1. Quantum Key Distribution (BB84)
+    std::cout << "\n--- Quantum Key Distribution (BB84) ---" << std::endl;
+    auto qkd_session = qkd->start_session();
+    qkd->transmit_photons(qkd_session);
+    qkd->measure_photons(qkd_session);
+    qkd->sift_key(qkd_session);
+    auto final_key = qkd->generate_final_key(qkd_session);
+    qkd->detect_eavesdropper(qkd_session);
+    
+    // 2. Zero-Knowledge Proofs
+    std::cout << "\n--- Zero-Knowledge Proofs ---" << std::endl;
+    auto proof = zkp->create_proof("secret_value", "public_statement");
+    zkp->verify_proof(proof);
+    
+    auto range_proof = zkp->create_range_proof(42, 0, 100);
+    zkp->verify_proof(range_proof);
+    
+    std::vector<std::string> set = {"alice", "bob", "charlie", "david"};
+    auto membership_proof = zkp->create_membership_proof("alice", set);
+    zkp->verify_proof(membership_proof);
+    
+    // 3. Steganography
     std::cout << "\n--- Steganography ---" << std::endl;
     auto img = steganography->load_image("cover_image.png");
     std::vector<uint8_t> secret_data = {'S', 'e', 'c', 'r', 'e', 't', '!'};
     steganography->embed_data(img, secret_data);
-    steganography->print_stego_report(img);
-    auto extracted = steganography->extract_data(img);
     
-    // 2. Video Encryption
+    // 4. Video Encryption
     std::cout << "\n--- Video Encryption ---" << std::endl;
     auto video_session = video_enc->start_session(1920, 1080, 30);
-    std::vector<uint8_t> frame_data(6220800, 0x42); // 1080p frame
+    std::vector<uint8_t> frame_data(6220800, 0x42);
     auto encrypted_frame = video_enc->encrypt_frame(frame_data, video_session);
-    auto decrypted_frame = video_enc->decrypt_frame(encrypted_frame, video_session);
     video_enc->end_session(video_session);
     
-    // 3. Voice Encryption
+    // 5. Voice Encryption
     std::cout << "\n--- Voice Encryption ---" << std::endl;
     auto voice_session = voice_enc->start_session("alice", "bob");
     std::vector<int16_t> pcm_data(160, 100);
     auto encrypted_voice = voice_enc->encrypt_voice_frame(pcm_data, voice_session);
     voice_enc->end_session(voice_session);
     
-    // 4. Group Chat
+    // 6. Group Chat
     std::cout << "\n--- Group Chat ---" << std::endl;
     auto group = group_chat->create_group("Project Alpha", "alice");
     group_chat->add_member(group, "bob");
     auto msg = group_chat->send_message(group, "alice", "Hello everyone!");
     
-    // 5. MPC Wallet
+    // 7. MPC Wallet
     std::cout << "\n--- MPC Wallet ---" << std::endl;
     auto shares = mpc_wallet->generate_shares(5, 3);
     auto tx = mpc_wallet->create_transaction("0x742F8c3C2f2c5e7dF8A3b6C2", 1.5);
     mpc_wallet->finalize_transaction(tx.tx_id, 3);
     
-    // 6. FHE
-    std::cout << "\n--- Fully Homomorphic Encryption ---" << std::endl;
-    auto fhe_keys = fhe_engine->generate_keypair(512);
-    auto enc1 = fhe_engine->encrypt(100.0);
-    auto enc2 = fhe_engine->encrypt(50.0);
-    auto sum = fhe_engine->add(enc1, enc2);
-    std::cout << "Calculation: 100 + 50 = " << fhe_engine->decrypt(sum) << " (verified)" << std::endl;
-    
-    // 7. Post-Quantum Crypto
+    // 8. Post-Quantum Crypto
     std::cout << "\n--- Post-Quantum Cryptography ---" << std::endl;
     pq_crypto->print_capabilities();
     auto kyber_kp = pq_crypto->generate_kyber_keypair();
     
-    // 8. Anonymous Routing
-    std::cout << "\n--- Anonymous Routing ---" << std::endl;
-    anon_routing->setup_network(10);
-    auto route = anon_routing->create_route();
-    anon_routing->send_anonymously("Secret message", route);
-    
-    std::cout << "\n=== All v14.0 Modules Initialized ===" << std::endl;
+    std::cout << "\n=== All v15.0 Modules Initialized ===" << std::endl;
     
     return 0;
 }
