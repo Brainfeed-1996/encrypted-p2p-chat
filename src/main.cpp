@@ -1,13 +1,12 @@
 /**
- * Encrypted P2P Chat v13.0
+ * Encrypted P2P Chat v14.0
  * Next-Generation Web3 Communication Suite
- * Complete Modular Architecture
+ * Ultimate Modular Architecture
  * 
- * v13.0 Features:
- * - All v12 modules PLUS:
- * - Blockchain Identity (DID)
- * - Voice Encryption (SRTP/ZRTP)
- * - Group Chat with Sender Keys
+ * v14.0 Features:
+ * - All v13 modules PLUS:
+ * - Steganography (LSB)
+ * - Video Encryption (H.264)
  * 
  * Author: Olivier Robert-Duboille
  */
@@ -32,16 +31,18 @@
 #include "include/blockchain_identity.h"
 #include "include/voice_encryption.h"
 #include "include/group_chat.h"
+#include "include/steganography.h"
+#include "include/video_encryption.h"
 
 int main() {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     
     std::cout << R"(
-    ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-    ║     Encrypted P2P Chat v13.0 - Complete Web3 Communication Suite                                                                         ║
-    ║     SD-JWT • MPC • FHE • DAO • PQC • DID • Voice Encryption • Group Chat • Anonymous Routing                                              ║
-    ║     Author: Olivier Robert-Duboille                                                                                                      ║
-    ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+    ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+    ║     Encrypted P2P Chat v14.0 - Ultimate Web3 Communication Suite                                                                                                   ║
+    ║     SD-JWT • MPC • FHE • DAO • PQC • DID • Voice/Video Encryption • Steganography • Group Chat • Anonymous Routing                                            ║
+    ║     Author: Olivier Robert-Duboille                                                                                                                                ║
+    ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
     )" << std::endl;
     
     // Initialize all modules
@@ -62,46 +63,44 @@ int main() {
     std::unique_ptr<Crypto::BlockchainIdentity> blockchain_id(new Crypto::BlockchainIdentity());
     std::unique_ptr<Crypto::VoiceEncryption> voice_enc(new Crypto::VoiceEncryption());
     std::unique_ptr<Crypto::GroupChat> group_chat(new Crypto::GroupChat());
+    std::unique_ptr<Crypto::Steganography> steganography(new Crypto::Steganography());
+    std::unique_ptr<Crypto::VideoEncryption> video_enc(new Crypto::VideoEncryption());
     
-    std::cout << "\n=== v13.0 Complete Suite Demo ===" << std::endl;
+    std::cout << "\n=== v14.0 Ultimate Suite Demo ===" << std::endl;
     
-    // 1. SD-JWT
-    std::cout << "\n--- SD-JWT Credentials ---" << std::endl;
-    std::map<std::string, std::string> claims = {
-        {"name", "Alice"}, {"email", "alice@example.com"},
-        {"age", "25"}, {"country", "France"}, {"credit_score", "750"}
-    };
-    auto cred = sdjwt->issue_credential("did:ethr:alice", claims);
-    auto pres = sdjwt->create_presentation(cred, {"name", "country"});
+    // 1. Steganography
+    std::cout << "\n--- Steganography ---" << std::endl;
+    auto img = steganography->load_image("cover_image.png");
+    std::vector<uint8_t> secret_data = {'S', 'e', 'c', 'r', 'e', 't', '!'};
+    steganography->embed_data(img, secret_data);
+    steganography->print_stego_report(img);
+    auto extracted = steganography->extract_data(img);
     
-    // 2. Blockchain Identity
-    std::cout << "\n--- Blockchain Identity (DID) ---" << std::endl;
-    auto did_doc = blockchain_id->resolve_did("did:ethr:0x742F8c3C2f2c5e7dF8A3b6C2E1F0A9B8C7D6E5F");
-    blockchain_id->register_did(did_doc);
-    blockchain_id->print_did_document(did_doc);
+    // 2. Video Encryption
+    std::cout << "\n--- Video Encryption ---" << std::endl;
+    auto video_session = video_enc->start_session(1920, 1080, 30);
+    std::vector<uint8_t> frame_data(6220800, 0x42); // 1080p frame
+    auto encrypted_frame = video_enc->encrypt_frame(frame_data, video_session);
+    auto decrypted_frame = video_enc->decrypt_frame(encrypted_frame, video_session);
+    video_enc->end_session(video_session);
     
     // 3. Voice Encryption
     std::cout << "\n--- Voice Encryption ---" << std::endl;
     auto voice_session = voice_enc->start_session("alice", "bob");
     std::vector<int16_t> pcm_data(160, 100);
     auto encrypted_voice = voice_enc->encrypt_voice_frame(pcm_data, voice_session);
-    auto decrypted_voice = voice_enc->decrypt_voice_frame(encrypted_voice, voice_session);
     voice_enc->end_session(voice_session);
     
     // 4. Group Chat
     std::cout << "\n--- Group Chat ---" << std::endl;
     auto group = group_chat->create_group("Project Alpha", "alice");
     group_chat->add_member(group, "bob");
-    group_chat->add_member(group, "charlie");
     auto msg = group_chat->send_message(group, "alice", "Hello everyone!");
-    auto received = group_chat->receive_message(group, msg, "bob");
     
     // 5. MPC Wallet
     std::cout << "\n--- MPC Wallet ---" << std::endl;
     auto shares = mpc_wallet->generate_shares(5, 3);
     auto tx = mpc_wallet->create_transaction("0x742F8c3C2f2c5e7dF8A3b6C2", 1.5);
-    mpc_wallet->sign_transaction(tx.tx_id, shares[0]);
-    mpc_wallet->sign_transaction(tx.tx_id, shares[1]);
     mpc_wallet->finalize_transaction(tx.tx_id, 3);
     
     // 6. FHE
@@ -110,8 +109,7 @@ int main() {
     auto enc1 = fhe_engine->encrypt(100.0);
     auto enc2 = fhe_engine->encrypt(50.0);
     auto sum = fhe_engine->add(enc1, enc2);
-    auto result = fhe_engine->decrypt(sum);
-    std::cout << "Calculation: 100 + 50 = " << result << " (verified)" << std::endl;
+    std::cout << "Calculation: 100 + 50 = " << fhe_engine->decrypt(sum) << " (verified)" << std::endl;
     
     // 7. Post-Quantum Crypto
     std::cout << "\n--- Post-Quantum Cryptography ---" << std::endl;
@@ -124,7 +122,7 @@ int main() {
     auto route = anon_routing->create_route();
     anon_routing->send_anonymously("Secret message", route);
     
-    std::cout << "\n=== All v13.0 Modules Initialized ===" << std::endl;
+    std::cout << "\n=== All v14.0 Modules Initialized ===" << std::endl;
     
     return 0;
 }

@@ -25,6 +25,7 @@ set(PRIVACY_SOURCES
     src/privacy/differential_privacy.cpp
     src/privacy/metadata_protection.cpp
     src/privacy/fhe_engine.cpp
+    src/privacy/steganography.cpp
 )
 
 # Source files - Enclave modules
@@ -46,6 +47,7 @@ set(NETWORK_SOURCES
     src/network/secure_file_transfer.cpp
     src/network/voice_encryption.cpp
     src/network/group_chat.cpp
+    src/network/video_encryption.cpp
 )
 
 # Include directories
