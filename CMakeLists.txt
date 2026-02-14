@@ -70,6 +70,9 @@ set(NETWORK_SOURCES
     src/network/secure_cryptocurrency.cpp
     src/network/secure_calendar.cpp
     src/network/secure_tasks.cpp
+    src/network/secure_identity_management.cpp
+    src/network/secure_authentication.cpp
+    src/network/secure_file_sharing.cpp
 )
 
 # Include directories

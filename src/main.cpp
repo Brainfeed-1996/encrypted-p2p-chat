@@ -1,12 +1,12 @@
 /**
- * Encrypted P2P Chat v24.0
+ * Encrypted P2P Chat v25.0
  * Next-Generation Web3 Communication Suite
  * 
- * v24.0 Features:
- * - All v23 modules PLUS:
- * - Secure Cryptocurrency (Multi-chain wallet)
- * - Secure Calendar (E2E encrypted)
- * - Secure Tasks (Project management)
+ * v25.0 Features:
+ * - All v24 modules PLUS:
+ * - Secure Identity Management (DID/VC)
+ * - Secure Authentication (MFA, Risk-based)
+ * - Secure File Sharing (E2E encrypted)
  * 
  * Author: Olivier Robert-Duboille
  */
@@ -54,16 +54,19 @@
 #include "include/secure_cryptocurrency.h"
 #include "include/secure_calendar.h"
 #include "include/secure_tasks.h"
+#include "include/secure_identity_management.h"
+#include "include/secure_authentication.h"
+#include "include/secure_file_sharing.h"
 
 int main() {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     
     std::cout << R"(
-    ╔═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-    ║     Encrypted P2P Chat v24.0 - Ultimate Privacy & Productivity Suite                       ║
-    ║     Crypto • Calendar • Tasks • Vault • Browser • Notes • Cloud • Voice • Ring Sigs • CT • FHE • ABE    ║
-    ║     Author: Olivier Robert-Duboille                                                  ║
-    ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+    ╔═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+    ║     Encrypted P2P Chat v25.0 - Ultimate Privacy, Identity & Productivity Suite                                              ║
+    ║     Identity • Authentication • File Sharing • Crypto • Calendar • Tasks • Vault • Browser • Notes • Cloud • Voice • Ring Sigs • CT  ║
+    ║     Author: Olivier Robert-Duboille                                                                                             ║
+    ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
     )" << std::endl;
     
     std::unique_ptr<Crypto::SDJWT> sdjwt(new Crypto::SDJWT());
@@ -99,8 +102,44 @@ int main() {
     std::unique_ptr<Crypto::SecureCryptocurrency> crypto(new Crypto::SecureCryptocurrency());
     std::unique_ptr<Crypto::SecureCalendar> calendar(new Crypto::SecureCalendar());
     std::unique_ptr<Crypto::SecureTasks> tasks(new Crypto::SecureTasks());
+    std::unique_ptr<Crypto::SecureIdentityManagement> identity(new Crypto::SecureIdentityManagement());
+    std::unique_ptr<Crypto::SecureAuthentication> auth(new Crypto::SecureAuthentication());
+    std::unique_ptr<Crypto::SecureFileSharing> file_sharing(new Crypto::SecureFileSharing());
     
-    std::cout << "\n=== v24.0 Ultimate Privacy Suite Demo ===" << std::endl;
+    std::cout << "\n=== v25.0 Ultimate Privacy Suite Demo ===" << std::endl;
+    
+    // Secure Identity Management
+    std::cout << "\n--- Secure Identity Management (DID/VC) ---" << std::endl;
+    identity->initialize();
+    auto id = identity->create_identity("Olivier Robert", "personal");
+    auto did = identity->create_did("web");
+    auto vc = identity->issue_credential(id.identity_id, "issuer_123", {"email_verified", "phone_verified"});
+    identity->verify_credential(vc);
+    identity->enable_selective_disclosure(true);
+    identity->enable_zero_knowledge_proofs(true);
+    identity->generate_identity_report();
+    
+    // Secure Authentication
+    std::cout << "\n--- Secure Authentication (MFA, Risk-based) ---" << std::endl;
+    auth->initialize();
+    auto auth_result = auth->authenticate("olivier@domain.com", "SecurePass123!");
+    auto session = auth->create_session("olivier@domain.com", "password");
+    auto mfa_methods = auth->get_mfa_methods("olivier@domain.com");
+    auth->add_mfa_method("olivier@domain.com", "totp", "Authenticator App");
+    auth->configure_auth_policy(auth->get_auth_policy());
+    auth->generate_auth_report();
+    
+    // Secure File Sharing
+    std::cout << "\n--- Secure File Sharing (E2E encrypted) ---" << std::endl;
+    file_sharing->initialize();
+    auto file = file_sharing->upload_file("olivier@domain.com", "document.pdf", {0x01, 0x02, 0x03}, "application/pdf");
+    auto link = file_sharing->create_share_link(file.file_id, "olivier@domain.com", 100, 7*24);
+    file_sharing->share_with_users(file.file_id, "olivier@domain.com", {"bob@company.com"}, "view");
+    auto preview = file_sharing->generate_preview(file.file_id);
+    file_sharing->enable_expiration(true);
+    file_sharing->enable_virus_scanning(true);
+    file_sharing->enable_audit_logging(true);
+    file_sharing->generate_sharing_report();
     
     // Secure Cryptocurrency
     std::cout << "\n--- Secure Cryptocurrency Wallet ---" << std::endl;
@@ -110,10 +149,6 @@ int main() {
     auto tx = crypto->create_transaction(wallet.wallet_id, "0xRecipient", 1.5, "ETH");
     crypto->sign_transaction(tx.tx_id, wallet.wallet_id);
     crypto->broadcast_transaction(tx.tx_id);
-    crypto->set_transaction_fee(50000);
-    crypto->enable_rbf(true);
-    crypto->configure_privacy_level("high");
-    auto balances = crypto->get_all_balances(wallet.wallet_id);
     crypto->generate_crypto_report();
     
     // Secure Calendar
@@ -121,13 +156,8 @@ int main() {
     calendar->initialize();
     calendar->enable_e2e_encryption(true);
     auto cal = calendar->create_calendar("Work Calendar", "user_123");
-    calendar->share_calendar(cal.calendar_id, "colleague_456", "view");
     auto event = calendar->create_event(cal.calendar_id, "Team Meeting", "Weekly sync", 
                                         time(nullptr), time(nullptr) + 3600);
-    calendar->invite_attendee(event.event_id, "bob@email.com");
-    auto slots = calendar->find_available_slots({"alice@email.com", "bob@email.com"}, 
-                                                time(nullptr), time(nullptr) + 86400, 60);
-    calendar->set_reminder(event.event_id, time(nullptr) - 300);
     calendar->generate_calendar_report();
     
     // Secure Tasks
@@ -135,42 +165,9 @@ int main() {
     tasks->initialize();
     tasks->enable_encryption(true);
     auto project = tasks->create_project("Q1 Goals", "user_123");
-    auto task1 = tasks->create_task("Complete security audit", "user_123");
-    tasks->assign_task(task1.task_id, "developer_789");
-    tasks->set_priority(task1.task_id, "high");
-    tasks->set_due_date(task1.task_id, time(nullptr) + 86400 * 7);
-    tasks->add_checklist_item(task1.task_id, "Review code");
-    tasks->add_checklist_item(task1.task_id, "Run tests");
-    tasks->add_comment(task1.task_id, "Starting next week");
-    tasks->add_task_to_project(task1.task_id, project.project_id);
-    auto task2 = tasks->create_task("Update documentation", "user_123");
-    auto stats = tasks->get_task_statistics("user_123");
-    auto completion_rate = tasks->get_completion_rate("user_123");
-    tasks->complete_task(task1.task_id);
+    auto task = tasks->create_task("Complete security audit", "user_123");
+    tasks->complete_task(task.task_id);
     tasks->generate_tasks_report();
-    
-    // Secure Browser
-    std::cout << "\n--- Secure Browser ---" << std::endl;
-    browser->initialize();
-    auto profile = browser->create_profile("Work Profile");
-    browser->configure_privacy({true, true, true, true, false, true, true});
-    browser->enable_fingerprinting_protection(true);
-    browser->enable_webrtc_leak_protection(true);
-    browser->enable_incognito_mode(true);
-    browser->open_secure_tab("https://github.com/Brainfeed-1996", profile.profile_id);
-    browser->generate_browser_report();
-    
-    // Secure Notes
-    std::cout << "\n--- Secure Notes ---" << std::endl;
-    notes->initialize();
-    notes->enable_end_to_end_encryption(true);
-    notes->configure_auto_lock(300);
-    auto notebook = notes->create_notebook("Project Notes");
-    auto note = notes->create_notebook(notebook.notebook_id, "Meeting Notes", "Important discussion points...");
-    notes->add_tag(note.note_id, "meeting");
-    notes->add_tag(note.note_id, "important");
-    notes->share_note(note.note_id, "colleague", "view", time(nullptr) + 86400);
-    notes->generate_notes_report();
     
     // Secure Vault
     std::cout << "\n--- Secure Vault (Password Manager) ---" << std::endl;
@@ -178,35 +175,10 @@ int main() {
     vault->enable_auto_lock(true, 300);
     vault->enable_biometric_unlock(true);
     auto user_vault = vault->create_vault("Personal Vault", "MasterPassword123!");
-    vault->unlock_vault(user_vault.vault_id, "MasterPassword123!");
     auto password = vault->add_password(user_vault.vault_id, "GitHub", "user@email.com", "SecurePass123!", "https://github.com");
-    std::string new_password;
-    vault->generate_secure_password(24, true, new_password);
-    vault->update_password(password.item_id, new_password);
-    auto card = vault->add_credit_card(user_vault.vault_id, "John Doe", "4111111111111111", "123", "12/25");
     vault->generate_vault_report();
     
-    // Secure Messaging V2
-    std::cout << "\n--- Secure Messaging V2 ---" << std::endl;
-    messaging_v2->initialize();
-    messaging_v2->enable_forward_secrecy(true);
-    messaging_v2->enable_read_receipts(true);
-    messaging_v2->enable_screenshot_detection(true);
-    auto conv = messaging_v2->create_conversation({"alice", "bob"});
-    auto msg = messaging_v2->send_message(conv.conversation_id, "alice", "Hello V2!", false, 3600);
-    messaging_v2->generate_messaging_report();
-    
-    // Secure Cloud Storage
-    std::cout << "\n--- Secure Cloud Storage ---" << std::endl;
-    cloud_storage->initialize();
-    cloud_storage->enable_zero_knowledge(true);
-    cloud_storage->enable_file_deduplication(true);
-    cloud_storage->enable_versioning(true);
-    auto folder = cloud_storage->create_folder("Work Documents");
-    auto cloud_file = cloud_storage->upload_file("user_123", "report.pdf", {0x01, 0x02, 0x03}, folder.file_id);
-    cloud_storage->generate_storage_report();
-    
-    std::cout << "\n=== All v24.0 Modules Initialized ===" << std::endl;
+    std::cout << "\n=== All v25.0 Modules Initialized ===" << std::endl;
     
     return 0;
 }
