@@ -44,6 +44,7 @@ set(CRYPTO_SOURCES
     src/crypto/zero_knowledge_proofs.cpp
     src/crypto/double_ratchet.cpp
     src/crypto/threshold_signatures.cpp
+    src/crypto/attribute_based_encryption.cpp
 )
 
 # Source files - Network modules
@@ -56,6 +57,7 @@ set(NETWORK_SOURCES
     src/network/mesh_network.cpp
     src/network/secure_messaging.cpp
     src/network/secure_drop.cpp
+    src/network/secure_video_conferencing.cpp
 )
 
 # Include directories

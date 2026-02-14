@@ -1,11 +1,11 @@
 /**
- * Encrypted P2P Chat v19.0
+ * Encrypted P2P Chat v20.0
  * Next-Generation Web3 Communication Suite
  * 
- * v19.0 Features:
- * - All v18 modules PLUS:
- * - Secure Drop (File Sharing)
- * - Homomorphic Encryption
+ * v20.0 Features:
+ * - All v19 modules PLUS:
+ * - Secure Video Conferencing
+ * - Attribute-Based Encryption
  * 
  * Author: Olivier Robert-Duboille
  */
@@ -39,16 +39,18 @@
 #include "include/secure_messaging.h"
 #include "include/secure_drop.h"
 #include "include/homomorphic_encryption.h"
+#include "include/secure_video_conferencing.h"
+#include "include/attribute_based_encryption.h"
 
 int main() {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     
     std::cout << R"(
-    ╔═══════════════════════════════════════════════════════════════════════════════════════════════════════╗
-    ║     Encrypted P2P Chat v19.0 - Advanced Privacy Suite                                  ║
-    ║     SD-JWT • MPC • FHE • DAO • PQC • QKD • ZK • Homomorphic • Secure Drop           ║
+    ╔═══════════════════════════════════════════════════════════════════════════════════════════════╗
+    ║     Encrypted P2P Chat v20.0 - Advanced Communication Suite                    ║
+    ║     SD-JWT • MPC • FHE • ABE • Video • ZK • PQC • QKD • Mesh Network            ║
     ║     Author: Olivier Robert-Duboille                                                  ║
-    ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════╝
+    ╚═══════════════════════════════════════════════════════════════════════════════════════════════╝
     )" << std::endl;
     
     std::unique_ptr<Crypto::SDJWT> sdjwt(new Crypto::SDJWT());
@@ -70,8 +72,38 @@ int main() {
     std::unique_ptr<Crypto::SecureMessaging> secure_messaging(new Crypto::SecureMessaging());
     std::unique_ptr<Crypto::SecureDrop> secure_drop(new Crypto::SecureDrop());
     std::unique_ptr<Crypto::HomomorphicEncryption> homomorphic(new Crypto::HomomorphicEncryption());
+    std::unique_ptr<Crypto::SecureVideoConferencing> video_conf(new Crypto::SecureVideoConferencing());
+    std::unique_ptr<Crypto::AttributeBasedEncryption> abe(new Crypto::AttributeBasedEncryption());
     
-    std::cout << "\n=== v19.0 Advanced Privacy Demo ===" << std::endl;
+    std::cout << "\n=== v20.0 Advanced Communication Demo ===" << std::endl;
+    
+    // Secure Video Conferencing
+    std::cout << "\n--- Secure Video Conferencing ---" << std::endl;
+    video_conf->initialize();
+    auto conference = video_conf->create_conference("alice", 10);
+    video_conf->join_conference(conference.conference_id, "bob");
+    video_conf->join_conference(conference.conference_id, "charlie");
+    video_conf->enable_e2e_encryption(true);
+    video_conf->enable_screen_sharing(true);
+    video_conf->start_recording(conference.conference_id);
+    
+    std::vector<uint8_t> frame_data(1920 * 1080 * 3 / 2, 0xAA);
+    bool encoded;
+    auto encoded_frame = video_conf->encode_video_frame(frame_data, encoded);
+    video_conf->decode_video_frame(encoded_frame);
+    video_conf->stop_recording(conference.conference_id);
+    video_conf->generate_conference_report();
+    
+    // Attribute-Based Encryption
+    std::cout << "\n--- Attribute-Based Encryption (ABE) ---" << std::endl;
+    std::vector<std::string> attrs = {"department:engineering", "clearance:high", "location:france"};
+    auto abe_keys = abe->generate_keys(attrs);
+    auto user_key = abe->derive_user_key(abe_keys, {"department:engineering", "clearance:high"});
+    std::string policy = "department:engineering AND clearance:high";
+    std::vector<uint8_t> sensitive_data = {0x01, 0x02, 0x03, 0x04, 0x05};
+    auto ct = abe->encrypt(sensitive_data, policy);
+    auto decrypted = abe->decrypt(ct, user_key);
+    abe->generate_abe_report();
     
     // Secure Drop
     std::cout << "\n--- Secure Drop ---" << std::endl;
@@ -86,25 +118,12 @@ int main() {
     auto he_keys = homomorphic->generate_key_pair(4096);
     std::vector<int64_t> plaintext = {1, 2, 3, 4, 5};
     auto ciphertext = homomorphic->encrypt(plaintext, he_keys.public_key);
-    auto result = homomorphic->decrypt(ciphertext, he_keys.secret_key);
     auto sum = homomorphic->add(ciphertext, ciphertext);
     auto product = homomorphic->multiply(ciphertext, ciphertext);
     homomorphic->bootstrap(ciphertext);
     homomorphic->print_stats();
     
-    // Secure Messaging
-    std::cout << "\n--- Secure Messaging ---" << std::endl;
-    auto msg = secure_messaging->create_message("alice", "bob", "Hello, secure world!");
-    auto encrypted = secure_messaging->encrypt_message(msg);
-    secure_messaging->send_message(msg);
-    
-    // Threshold Signatures
-    std::cout << "\n--- Threshold Signatures ---" << std::endl;
-    auto shares = threshold_sigs->generate_shares(5, 3);
-    auto sig = threshold_sigs->combine_shares({shares[0], shares[1], shares[2]});
-    threshold_sigs->verify_signature(sig, "Transaction");
-    
-    std::cout << "\n=== All v19.0 Modules Initialized ===" << std::endl;
+    std::cout << "\n=== All v20.0 Modules Initialized ===" << std::endl;
     
     return 0;
 }
