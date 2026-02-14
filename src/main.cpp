@@ -1,12 +1,12 @@
 /**
- * Encrypted P2P Chat v22.0
+ * Encrypted P2P Chat v23.0
  * Next-Generation Web3 Communication Suite
  * 
- * v22.0 Features:
- * - All v21 modules PLUS:
- * - Secure Messaging V2 (Modern E2E)
- * - Secure Cloud Storage
- * - Secure Voice/Video V2 (WebRTC)
+ * v23.0 Features:
+ * - All v22 modules PLUS:
+ * - Secure Browser (Privacy-focused)
+ * - Secure Notes (E2E encrypted)
+ * - Secure Vault (Password Manager)
  * 
  * Author: Olivier Robert-Duboille
  */
@@ -48,14 +48,17 @@
 #include "include/secure_messaging_v2.h"
 #include "include/secure_cloud_storage.h"
 #include "include/secure_voice_video_v2.h"
+#include "include/secure_browser.h"
+#include "include/secure_notes.h"
+#include "include/secure_vault.h"
 
 int main() {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     
     std::cout << R"(
     ╔═══════════════════════════════════════════════════════════════════════════════════════════════════════╗
-    ║     Encrypted P2P Chat v22.0 - Ultimate Privacy Suite                             ║
-    ║     Secure Cloud • Voice V2 • Messaging V2 • Ring Sigs • CT • FHE • ABE • ZK • PQC    ║
+    ║     Encrypted P2P Chat v23.0 - Ultimate Privacy & Security Suite                    ║
+    ║     Secure Vault • Browser • Notes • Cloud • Voice V2 • Ring Sigs • CT • FHE • ABE   ║
     ║     Author: Olivier Robert-Duboille                                                  ║
     ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════╝
     )" << std::endl;
@@ -87,8 +90,55 @@ int main() {
     std::unique_ptr<Crypto::SecureMessagingV2> messaging_v2(new Crypto::SecureMessagingV2());
     std::unique_ptr<Crypto::SecureCloudStorage> cloud_storage(new Crypto::SecureCloudStorage());
     std::unique_ptr<Crypto::SecureVoiceVideoV2> media_v2(new Crypto::SecureVoiceVideoV2());
+    std::unique_ptr<Crypto::SecureBrowser> browser(new Crypto::SecureBrowser());
+    std::unique_ptr<Crypto::SecureNotes> notes(new Crypto::SecureNotes());
+    std::unique_ptr<Crypto::SecureVault> vault(new Crypto::SecureVault());
     
-    std::cout << "\n=== v22.0 Ultimate Privacy Demo ===" << std::endl;
+    std::cout << "\n=== v23.0 Ultimate Privacy Suite Demo ===" << std::endl;
+    
+    // Secure Browser
+    std::cout << "\n--- Secure Browser ---" << std::endl;
+    browser->initialize();
+    auto profile = browser->create_profile("Personal Profile");
+    browser->configure_privacy({true, true, true, true, false, true, true});
+    browser->enable_fingerprinting_protection(true);
+    browser->enable_webrtc_leak_protection(true);
+    browser->enable_incognito_mode(true);
+    auto session = browser->start_session(profile.profile_id);
+    browser->open_secure_tab("https://example.com", profile.profile_id);
+    browser->add_bookmark(profile.profile_id, "Example", "https://example.com");
+    browser->generate_browser_report();
+    
+    // Secure Notes
+    std::cout << "\n--- Secure Notes ---" << std::endl;
+    notes->initialize();
+    notes->enable_end_to_end_encryption(true);
+    notes->configure_auto_lock(300);
+    notes->enable_biometric_unlock(true);
+    auto notebook = notes->create_notebook("Personal");
+    auto note = notes->create_note(notebook.notebook_id, "Secret Diary", "This is my secret note content.");
+    notes->add_tag(note.note_id, "personal");
+    notes->add_tag(note.note_id, "diary");
+    auto search_results = notes->search_notes("secret");
+    auto notebook_list = notes->list_notebooks();
+    auto share = notes->share_note(note.note_id, "friend", "view", time(nullptr) + 86400);
+    notes->generate_notes_report();
+    
+    // Secure Vault (Password Manager)
+    std::cout << "\n--- Secure Vault (Password Manager) ---" << std::endl;
+    vault->initialize();
+    vault->enable_auto_lock(true, 300);
+    vault->enable_biometric_unlock(true);
+    auto user_vault = vault->create_vault("Main Vault", "MasterPassword123!");
+    vault->unlock_vault(user_vault.vault_id, "MasterPassword123!");
+    auto password = vault->add_password(user_vault.vault_id, "Gmail", "user@gmail.com", "SecurePass123!", "https://gmail.com");
+    std::cout << "[+] Password strength: " << password.strength_score << "/100" << std::endl;
+    std::string new_password;
+    vault->generate_secure_password(24, true, new_password);
+    std::cout << "[+] Generated password: " << new_password << std::endl;
+    vault->update_password(password.item_id, new_password);
+    auto card = vault->add_credit_card(user_vault.vault_id, "John Doe", "4111111111111111", "123", "12/25");
+    vault->generate_vault_report();
     
     // Secure Messaging V2
     std::cout << "\n--- Secure Messaging V2 ---" << std::endl;
@@ -96,9 +146,8 @@ int main() {
     messaging_v2->enable_forward_secrecy(true);
     messaging_v2->enable_read_receipts(true);
     messaging_v2->enable_screenshot_detection(true);
-    auto conv = messaging_v2->create_conversation({"alice", "bob", "charlie"});
-    auto msg = messaging_v2->send_message(conv.conversation_id, "alice", "Hello V2 world!", false, 3600);
-    messaging_v2->rotate_group_key(conv.conversation_id);
+    auto conv = messaging_v2->create_conversation({"alice", "bob"});
+    auto msg = messaging_v2->send_message(conv.conversation_id, "alice", "Hello V2!", false, 3600);
     messaging_v2->generate_messaging_report();
     
     // Secure Cloud Storage
@@ -107,10 +156,8 @@ int main() {
     cloud_storage->enable_zero_knowledge(true);
     cloud_storage->enable_file_deduplication(true);
     cloud_storage->enable_versioning(true);
-    auto folder = cloud_storage->create_folder("alice", "Documents");
-    auto file = cloud_storage->upload_file("alice", "secret.txt", {0x01, 0x02, 0x03, 0x04}, folder.file_id);
-    cloud_storage->share_file(file.file_id, {"bob", "view", 0, false});
-    auto quota = cloud_storage->get_quota("alice");
+    auto folder = cloud_storage->create_folder("alice", "Private");
+    auto cloud_file = cloud_storage->upload_file("alice", "secret.pdf", {0x01, 0x02, 0x03}, folder.file_id);
     cloud_storage->generate_storage_report();
     
     // Secure Voice/Video V2
@@ -119,40 +166,20 @@ int main() {
     media_v2->enable_e2e_encryption(true);
     media_v2->enable_dtls(true);
     media_v2->enable_srtp(true);
-    media_v2->enable_turn_stun(true);
     auto call = media_v2->initiate_call("alice", "bob", "video");
     media_v2->answer_call(call.session_id);
-    auto audio_frame = media_v2->capture_audio();
-    auto video_frame = media_v2->capture_video(false);
-    media_v2->encode_video_frame(video_frame);
-    media_v2->decode_video_frame(video_frame);
     auto quality = media_v2->get_call_quality(call.session_id);
     media_v2->end_call(call.session_id);
     media_v2->generate_media_report();
     
     // Ring Signatures
-    std::cout << "\n--- Ring Signatures (Monero-style) ---" << std::endl;
+    std::cout << "\n--- Ring Signatures ---" << std::endl;
     auto ring_keys = ring_sigs->generate_key_pair();
-    std::vector<std::vector<uint8_t>> ring_members = {{0x10, 0x11}, {0x20, 0x21}};
-    auto ring_sig = ring_sigs->create_ring_signature("anonymous_vote", ring_members, ring_keys.private_key);
+    auto ring_sig = ring_sigs->create_ring_signature("anonymous_vote", {{0x10, 0x11}}, ring_keys.private_key);
     ring_sigs->verify_ring_signature(ring_sig);
-    auto linkable_tag = ring_sigs->create_linkable_tag("voting_group");
     ring_sigs->generate_ring_report();
     
-    // Confidential Transactions
-    std::cout << "\n--- Confidential Transactions ---" << std::endl;
-    auto commitment = ct->create_commitment(5000000);
-    Crypto::Input input;
-    input.amount = 5000000;
-    Crypto::Output output;
-    output.amount = 4500000;
-    auto ct_tx = ct->create_transaction({input}, {output}, 500000);
-    auto range_proof = ct->generate_range_proof(4500000);
-    ct->verify_range_proof(range_proof);
-    ct->verify_transaction(ct_tx);
-    ct->generate_ct_report();
-    
-    std::cout << "\n=== All v22.0 Modules Initialized ===" << std::endl;
+    std::cout << "\n=== All v23.0 Modules Initialized ===" << std::endl;
     
     return 0;
 }
