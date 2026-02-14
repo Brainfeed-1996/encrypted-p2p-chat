@@ -15,6 +15,7 @@ message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERS
 # Source files - Credentials modules
 set(CREDENTIALS_SOURCES
     src/credentials/sdjwt.cpp
+    src/credentials/mpc_wallet.cpp
 )
 
 # Source files - Privacy modules
@@ -22,12 +23,15 @@ set(PRIVACY_SOURCES
     src/privacy/pir.cpp
     src/privacy/differential_privacy.cpp
     src/privacy/metadata_protection.cpp
+    src/privacy/fhe_engine.cpp
 )
 
 # Source files - Enclave modules
 set(ENCLAVE_SOURCES
     src/enclave/secure_enclave.cpp
     src/enclave/pq3_protocol.cpp
+    src/enclave/dao_governance.cpp
+    src/enclave/tls_handshake.cpp
 )
 
 # Include directories
