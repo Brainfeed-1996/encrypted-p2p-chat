@@ -3,11 +3,27 @@ project(EncryptedP2PChat VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release")
+endif()
+
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
 
 include_directories(include)
-
 add_executable(p2p_chat src/main.cpp)
 
 if(UNIX)
-    target_link_libraries(p2p_chat pthread)
+    find_package(Threads REQUIRED)
+    target_link_libraries(p2p_chat PRIVATE Threads::Threads)
 endif()
+
+if(WIN32)
+    target_compile_options(p2p_chat PRIVATE /W4 /WX)
+else()
+    target_compile_options(p2p_chat PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+install(TARGETS p2p_chat DESTINATION bin)
