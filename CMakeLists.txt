@@ -67,6 +67,9 @@ set(NETWORK_SOURCES
     src/network/secure_browser.cpp
     src/network/secure_notes.cpp
     src/network/secure_vault.cpp
+    src/network/secure_cryptocurrency.cpp
+    src/network/secure_calendar.cpp
+    src/network/secure_tasks.cpp
 )
 
 # Include directories

@@ -1,12 +1,12 @@
 /**
- * Encrypted P2P Chat v23.0
+ * Encrypted P2P Chat v24.0
  * Next-Generation Web3 Communication Suite
  * 
- * v23.0 Features:
- * - All v22 modules PLUS:
- * - Secure Browser (Privacy-focused)
- * - Secure Notes (E2E encrypted)
- * - Secure Vault (Password Manager)
+ * v24.0 Features:
+ * - All v23 modules PLUS:
+ * - Secure Cryptocurrency (Multi-chain wallet)
+ * - Secure Calendar (E2E encrypted)
+ * - Secure Tasks (Project management)
  * 
  * Author: Olivier Robert-Duboille
  */
@@ -51,16 +51,19 @@
 #include "include/secure_browser.h"
 #include "include/secure_notes.h"
 #include "include/secure_vault.h"
+#include "include/secure_cryptocurrency.h"
+#include "include/secure_calendar.h"
+#include "include/secure_tasks.h"
 
 int main() {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     
     std::cout << R"(
-    ╔═══════════════════════════════════════════════════════════════════════════════════════════════════════╗
-    ║     Encrypted P2P Chat v23.0 - Ultimate Privacy & Security Suite                    ║
-    ║     Secure Vault • Browser • Notes • Cloud • Voice V2 • Ring Sigs • CT • FHE • ABE   ║
+    ╔═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+    ║     Encrypted P2P Chat v24.0 - Ultimate Privacy & Productivity Suite                       ║
+    ║     Crypto • Calendar • Tasks • Vault • Browser • Notes • Cloud • Voice • Ring Sigs • CT • FHE • ABE    ║
     ║     Author: Olivier Robert-Duboille                                                  ║
-    ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════╝
+    ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
     )" << std::endl;
     
     std::unique_ptr<Crypto::SDJWT> sdjwt(new Crypto::SDJWT());
@@ -93,20 +96,68 @@ int main() {
     std::unique_ptr<Crypto::SecureBrowser> browser(new Crypto::SecureBrowser());
     std::unique_ptr<Crypto::SecureNotes> notes(new Crypto::SecureNotes());
     std::unique_ptr<Crypto::SecureVault> vault(new Crypto::SecureVault());
+    std::unique_ptr<Crypto::SecureCryptocurrency> crypto(new Crypto::SecureCryptocurrency());
+    std::unique_ptr<Crypto::SecureCalendar> calendar(new Crypto::SecureCalendar());
+    std::unique_ptr<Crypto::SecureTasks> tasks(new Crypto::SecureTasks());
     
-    std::cout << "\n=== v23.0 Ultimate Privacy Suite Demo ===" << std::endl;
+    std::cout << "\n=== v24.0 Ultimate Privacy Suite Demo ===" << std::endl;
+    
+    // Secure Cryptocurrency
+    std::cout << "\n--- Secure Cryptocurrency Wallet ---" << std::endl;
+    crypto->initialize();
+    crypto->enable_cold_storage(true);
+    auto wallet = crypto->create_wallet("ETH", false);
+    auto tx = crypto->create_transaction(wallet.wallet_id, "0xRecipient", 1.5, "ETH");
+    crypto->sign_transaction(tx.tx_id, wallet.wallet_id);
+    crypto->broadcast_transaction(tx.tx_id);
+    crypto->set_transaction_fee(50000);
+    crypto->enable_rbf(true);
+    crypto->configure_privacy_level("high");
+    auto balances = crypto->get_all_balances(wallet.wallet_id);
+    crypto->generate_crypto_report();
+    
+    // Secure Calendar
+    std::cout << "\n--- Secure Calendar ---" << std::endl;
+    calendar->initialize();
+    calendar->enable_e2e_encryption(true);
+    auto cal = calendar->create_calendar("Work Calendar", "user_123");
+    calendar->share_calendar(cal.calendar_id, "colleague_456", "view");
+    auto event = calendar->create_event(cal.calendar_id, "Team Meeting", "Weekly sync", 
+                                        time(nullptr), time(nullptr) + 3600);
+    calendar->invite_attendee(event.event_id, "bob@email.com");
+    auto slots = calendar->find_available_slots({"alice@email.com", "bob@email.com"}, 
+                                                time(nullptr), time(nullptr) + 86400, 60);
+    calendar->set_reminder(event.event_id, time(nullptr) - 300);
+    calendar->generate_calendar_report();
+    
+    // Secure Tasks
+    std::cout << "\n--- Secure Tasks ---" << std::endl;
+    tasks->initialize();
+    tasks->enable_encryption(true);
+    auto project = tasks->create_project("Q1 Goals", "user_123");
+    auto task1 = tasks->create_task("Complete security audit", "user_123");
+    tasks->assign_task(task1.task_id, "developer_789");
+    tasks->set_priority(task1.task_id, "high");
+    tasks->set_due_date(task1.task_id, time(nullptr) + 86400 * 7);
+    tasks->add_checklist_item(task1.task_id, "Review code");
+    tasks->add_checklist_item(task1.task_id, "Run tests");
+    tasks->add_comment(task1.task_id, "Starting next week");
+    tasks->add_task_to_project(task1.task_id, project.project_id);
+    auto task2 = tasks->create_task("Update documentation", "user_123");
+    auto stats = tasks->get_task_statistics("user_123");
+    auto completion_rate = tasks->get_completion_rate("user_123");
+    tasks->complete_task(task1.task_id);
+    tasks->generate_tasks_report();
     
     // Secure Browser
     std::cout << "\n--- Secure Browser ---" << std::endl;
     browser->initialize();
-    auto profile = browser->create_profile("Personal Profile");
+    auto profile = browser->create_profile("Work Profile");
     browser->configure_privacy({true, true, true, true, false, true, true});
     browser->enable_fingerprinting_protection(true);
     browser->enable_webrtc_leak_protection(true);
     browser->enable_incognito_mode(true);
-    auto session = browser->start_session(profile.profile_id);
-    browser->open_secure_tab("https://example.com", profile.profile_id);
-    browser->add_bookmark(profile.profile_id, "Example", "https://example.com");
+    browser->open_secure_tab("https://github.com/Brainfeed-1996", profile.profile_id);
     browser->generate_browser_report();
     
     // Secure Notes
@@ -114,28 +165,23 @@ int main() {
     notes->initialize();
     notes->enable_end_to_end_encryption(true);
     notes->configure_auto_lock(300);
-    notes->enable_biometric_unlock(true);
-    auto notebook = notes->create_notebook("Personal");
-    auto note = notes->create_note(notebook.notebook_id, "Secret Diary", "This is my secret note content.");
-    notes->add_tag(note.note_id, "personal");
-    notes->add_tag(note.note_id, "diary");
-    auto search_results = notes->search_notes("secret");
-    auto notebook_list = notes->list_notebooks();
-    auto share = notes->share_note(note.note_id, "friend", "view", time(nullptr) + 86400);
+    auto notebook = notes->create_notebook("Project Notes");
+    auto note = notes->create_notebook(notebook.notebook_id, "Meeting Notes", "Important discussion points...");
+    notes->add_tag(note.note_id, "meeting");
+    notes->add_tag(note.note_id, "important");
+    notes->share_note(note.note_id, "colleague", "view", time(nullptr) + 86400);
     notes->generate_notes_report();
     
-    // Secure Vault (Password Manager)
+    // Secure Vault
     std::cout << "\n--- Secure Vault (Password Manager) ---" << std::endl;
     vault->initialize();
     vault->enable_auto_lock(true, 300);
     vault->enable_biometric_unlock(true);
-    auto user_vault = vault->create_vault("Main Vault", "MasterPassword123!");
+    auto user_vault = vault->create_vault("Personal Vault", "MasterPassword123!");
     vault->unlock_vault(user_vault.vault_id, "MasterPassword123!");
-    auto password = vault->add_password(user_vault.vault_id, "Gmail", "user@gmail.com", "SecurePass123!", "https://gmail.com");
-    std::cout << "[+] Password strength: " << password.strength_score << "/100" << std::endl;
+    auto password = vault->add_password(user_vault.vault_id, "GitHub", "user@email.com", "SecurePass123!", "https://github.com");
     std::string new_password;
     vault->generate_secure_password(24, true, new_password);
-    std::cout << "[+] Generated password: " << new_password << std::endl;
     vault->update_password(password.item_id, new_password);
     auto card = vault->add_credit_card(user_vault.vault_id, "John Doe", "4111111111111111", "123", "12/25");
     vault->generate_vault_report();
@@ -156,30 +202,11 @@ int main() {
     cloud_storage->enable_zero_knowledge(true);
     cloud_storage->enable_file_deduplication(true);
     cloud_storage->enable_versioning(true);
-    auto folder = cloud_storage->create_folder("alice", "Private");
-    auto cloud_file = cloud_storage->upload_file("alice", "secret.pdf", {0x01, 0x02, 0x03}, folder.file_id);
+    auto folder = cloud_storage->create_folder("Work Documents");
+    auto cloud_file = cloud_storage->upload_file("user_123", "report.pdf", {0x01, 0x02, 0x03}, folder.file_id);
     cloud_storage->generate_storage_report();
     
-    // Secure Voice/Video V2
-    std::cout << "\n--- Secure Voice/Video V2 (WebRTC) ---" << std::endl;
-    media_v2->initialize();
-    media_v2->enable_e2e_encryption(true);
-    media_v2->enable_dtls(true);
-    media_v2->enable_srtp(true);
-    auto call = media_v2->initiate_call("alice", "bob", "video");
-    media_v2->answer_call(call.session_id);
-    auto quality = media_v2->get_call_quality(call.session_id);
-    media_v2->end_call(call.session_id);
-    media_v2->generate_media_report();
-    
-    // Ring Signatures
-    std::cout << "\n--- Ring Signatures ---" << std::endl;
-    auto ring_keys = ring_sigs->generate_key_pair();
-    auto ring_sig = ring_sigs->create_ring_signature("anonymous_vote", {{0x10, 0x11}}, ring_keys.private_key);
-    ring_sigs->verify_ring_signature(ring_sig);
-    ring_sigs->generate_ring_report();
-    
-    std::cout << "\n=== All v23.0 Modules Initialized ===" << std::endl;
+    std::cout << "\n=== All v24.0 Modules Initialized ===" << std::endl;
     
     return 0;
 }
