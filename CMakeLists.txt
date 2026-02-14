@@ -41,6 +41,7 @@ set(CRYPTO_SOURCES
     src/crypto/post_quantum_crypto.cpp
     src/crypto/quantum_key_distribution.cpp
     src/crypto/zero_knowledge_proofs.cpp
+    src/crypto/double_ratchet.cpp
 )
 
 # Source files - Network modules
@@ -50,6 +51,7 @@ set(NETWORK_SOURCES
     src/network/voice_encryption.cpp
     src/network/group_chat.cpp
     src/network/video_encryption.cpp
+    src/network/mesh_network.cpp
 )
 
 # Include directories
