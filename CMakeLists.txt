@@ -73,6 +73,12 @@ set(NETWORK_SOURCES
     src/network/secure_identity_management.cpp
     src/network/secure_authentication.cpp
     src/network/secure_file_sharing.cpp
+    src/network/secure_conference.cpp
+)
+
+# Source files - Governance modules
+set(GOVERNANCE_SOURCES
+    src/governance/secure_voting.cpp
 )
 
 # Include directories
@@ -86,6 +92,7 @@ add_executable(p2p_chat
     ${ENCLAVE_SOURCES}
     ${CRYPTO_SOURCES}
     ${NETWORK_SOURCES}
+    ${GOVERNANCE_SOURCES}
 )
 
 if(UNIX)
