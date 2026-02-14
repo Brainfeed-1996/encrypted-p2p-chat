@@ -1,14 +1,13 @@
 /**
- * Encrypted P2P Chat v11.0
- * Next-Generation Web3 Communication Suite with Advanced Cryptography
- * Extended Modular Architecture
+ * Encrypted P2P Chat v12.0
+ * Next-Generation Web3 Communication Suite
+ * Extended Modular Architecture with Crypto & Network
  * 
- * v11.0 Features:
- * - All v10 modules PLUS:
- * - MPC Wallet (Threshold Signatures)
- * - FHE Engine (CKKS)
- * - DAO Governance
- * - Quantum-Resistant TLS 1.3
+ * v12.0 Features:
+ * - All v11 modules PLUS:
+ * - Anonymous Routing (Tor-like)
+ * - Post-Quantum Crypto (Kyber/Dilithium/SPHINCS)
+ * - Secure File Transfer
  * 
  * Author: Olivier Robert-Duboille
  */
@@ -27,16 +26,19 @@
 #include "include/fhe_engine.h"
 #include "include/dao_governance.h"
 #include "include/tls_handshake.h"
+#include "include/post_quantum_crypto.h"
+#include "include/anonymous_routing.h"
+#include "include/secure_file_transfer.h"
 
 int main() {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     
     std::cout << R"(
-    ╔═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-    ║     Encrypted P2P Chat v11.0 - Extended Web3 Communication Suite (Modular)                                       ║
-    ║     SD-JWT • PIR • MPC • FHE • DAO • TLS 1.3 • SGX • PQ3 • Differential Privacy                              ║
-    ║     Author: Olivier Robert-Duboille                                                                                ║
-    ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+    ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+    ║     Encrypted P2P Chat v12.0 - Extended Web3 Suite with Crypto & Network Modules                                           ║
+    ║     SD-JWT • MPC • FHE • DAO • TLS • PQC • Anonymous Routing • Secure File Transfer                                    ║
+    ║     Author: Olivier Robert-Duboille                                                                                      ║
+    ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
     )" << std::endl;
     
     // Initialize all modules
@@ -51,8 +53,11 @@ int main() {
     std::unique_ptr<Crypto::FHEEngine> fhe_engine(new Crypto::FHEEngine());
     std::unique_ptr<Crypto::DAOGovernance> dao(new Crypto::DAOGovernance());
     std::unique_ptr<Crypto::QRTLSHandshake> tls_handshake(new Crypto::QRTLSHandshake());
+    std::unique_ptr<Crypto::PostQuantumCrypto> pq_crypto(new Crypto::PostQuantumCrypto());
+    std::unique_ptr<Crypto::AnonymousRouting> anon_routing(new Crypto::AnonymousRouting());
+    std::unique_ptr<Crypto::SecureFileTransfer> file_transfer(new Crypto::SecureFileTransfer());
     
-    std::cout << "\n=== v11.0 Extended Modular Architecture Demo ===" << std::endl;
+    std::cout << "\n=== v12.0 Extended Suite Demo ===" << std::endl;
     
     // 1. SD-JWT
     std::cout << "\n--- SD-JWT Credentials ---" << std::endl;
@@ -113,14 +118,34 @@ int main() {
     std::cout << "\n--- DAO Governance ---" << std::endl;
     auto proposal = dao->create_proposal("Add New Moderator", {"Yes", "No", "Abstain"});
     dao->cast_vote("0xAlice", 1, "Yes", 500000);
-    dao->cast_vote("0xBob", 1, "No", 300000);
     dao->execute_proposal(1);
     
     // 10. TLS Handshake
     std::cout << "\n--- Quantum-Resistant TLS 1.3 ---" << std::endl;
     auto tls_result = tls_handshake->perform_handshake("secure-messenger.com");
     
-    std::cout << "\n=== All v11.0 Modules Initialized ===" << std::endl;
+    // 11. Post-Quantum Crypto
+    std::cout << "\n--- Post-Quantum Cryptography ---" << std::endl;
+    pq_crypto->print_capabilities();
+    auto kyber_kp = pq_crypto->generate_kyber_keypair();
+    auto shared = pq_crypto->kyber_encapsulate(kyber_kp.public_key);
+    auto dilithium_sig = pq_crypto->dilithium_sign(std::vector<uint8_t>(10, 0x42), kyber_kp.secret_key);
+    pq_crypto->dilithium_verify(std::vector<uint8_t>(10, 0x42), dilithium_sig, kyber_kp.public_key);
+    
+    // 12. Anonymous Routing
+    std::cout << "\n--- Anonymous Routing ---" << std::endl;
+    anon_routing->setup_network(10);
+    auto route = anon_routing->create_route();
+    anon_routing->send_anonymously("Secret message", route);
+    
+    // 13. Secure File Transfer
+    std::cout << "\n--- Secure File Transfer ---" << std::endl;
+    auto transfer = file_transfer->start_transfer("document.pdf", 1048576, "bob");
+    auto chunk = file_transfer->create_chunk(transfer, 0);
+    file_transfer->verify_chunk(chunk);
+    file_transfer->complete_transfer(transfer);
+    
+    std::cout << "\n=== All v12.0 Modules Initialized ===" << std::endl;
     
     return 0;
 }

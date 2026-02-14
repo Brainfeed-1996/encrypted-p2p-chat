@@ -34,6 +34,17 @@ set(ENCLAVE_SOURCES
     src/enclave/tls_handshake.cpp
 )
 
+# Source files - Crypto modules
+set(CRYPTO_SOURCES
+    src/crypto/post_quantum_crypto.cpp
+)
+
+# Source files - Network modules
+set(NETWORK_SOURCES
+    src/network/anonymous_routing.cpp
+    src/network/secure_file_transfer.cpp
+)
+
 # Include directories
 include_directories(include)
 
@@ -43,6 +54,8 @@ add_executable(p2p_chat
     ${CREDENTIALS_SOURCES}
     ${PRIVACY_SOURCES}
     ${ENCLAVE_SOURCES}
+    ${CRYPTO_SOURCES}
+    ${NETWORK_SOURCES}
 )
 
 if(UNIX)
