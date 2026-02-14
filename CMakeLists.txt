@@ -53,6 +53,7 @@ set(NETWORK_SOURCES
     src/network/group_chat.cpp
     src/network/video_encryption.cpp
     src/network/mesh_network.cpp
+    src/network/secure_messaging.cpp
 )
 
 # Include directories
