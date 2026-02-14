@@ -42,6 +42,7 @@ set(CRYPTO_SOURCES
     src/crypto/quantum_key_distribution.cpp
     src/crypto/zero_knowledge_proofs.cpp
     src/crypto/double_ratchet.cpp
+    src/crypto/threshold_signatures.cpp
 )
 
 # Source files - Network modules
