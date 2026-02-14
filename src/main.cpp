@@ -1,10 +1,11 @@
 /**
- * Encrypted P2P Chat v18.0
+ * Encrypted P2P Chat v19.0
  * Next-Generation Web3 Communication Suite
  * 
- * v18.0 Features:
- * - All v17 modules PLUS:
- * - Secure Messaging
+ * v19.0 Features:
+ * - All v18 modules PLUS:
+ * - Secure Drop (File Sharing)
+ * - Homomorphic Encryption
  * 
  * Author: Olivier Robert-Duboille
  */
@@ -36,14 +37,16 @@
 #include "include/video_encryption.h"
 #include "include/mesh_network.h"
 #include "include/secure_messaging.h"
+#include "include/secure_drop.h"
+#include "include/homomorphic_encryption.h"
 
 int main() {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     
     std::cout << R"(
     ╔═══════════════════════════════════════════════════════════════════════════════════════════════════════╗
-    ║     Encrypted P2P Chat v18.0 - Secure Messaging Suite                                      ║
-    ║     SD-JWT • MPC • FHE • DAO • PQC • QKD • ZK • Messaging • Mesh Network              ║
+    ║     Encrypted P2P Chat v19.0 - Advanced Privacy Suite                                  ║
+    ║     SD-JWT • MPC • FHE • DAO • PQC • QKD • ZK • Homomorphic • Secure Drop           ║
     ║     Author: Olivier Robert-Duboille                                                  ║
     ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════╝
     )" << std::endl;
@@ -65,8 +68,29 @@ int main() {
     std::unique_ptr<Crypto::VideoEncryption> video_enc(new Crypto::VideoEncryption());
     std::unique_ptr<Crypto::MeshNetwork> mesh_network(new Crypto::MeshNetwork());
     std::unique_ptr<Crypto::SecureMessaging> secure_messaging(new Crypto::SecureMessaging());
+    std::unique_ptr<Crypto::SecureDrop> secure_drop(new Crypto::SecureDrop());
+    std::unique_ptr<Crypto::HomomorphicEncryption> homomorphic(new Crypto::HomomorphicEncryption());
     
-    std::cout << "\n=== v18.0 Secure Messaging Demo ===" << std::endl;
+    std::cout << "\n=== v19.0 Advanced Privacy Demo ===" << std::endl;
+    
+    // Secure Drop
+    std::cout << "\n--- Secure Drop ---" << std::endl;
+    secure_drop->initialize();
+    secure_drop->configure({100, 24, true, true, {"*"}});
+    auto file_id = secure_drop->upload_file("alice", "file data here", "document.pdf", "application/pdf");
+    secure_drop->verify_integrity(file_id);
+    secure_drop->generate_audit_log();
+    
+    // Homomorphic Encryption
+    std::cout << "\n--- Homomorphic Encryption (BFV/CKKS) ---" << std::endl;
+    auto he_keys = homomorphic->generate_key_pair(4096);
+    std::vector<int64_t> plaintext = {1, 2, 3, 4, 5};
+    auto ciphertext = homomorphic->encrypt(plaintext, he_keys.public_key);
+    auto result = homomorphic->decrypt(ciphertext, he_keys.secret_key);
+    auto sum = homomorphic->add(ciphertext, ciphertext);
+    auto product = homomorphic->multiply(ciphertext, ciphertext);
+    homomorphic->bootstrap(ciphertext);
+    homomorphic->print_stats();
     
     // Secure Messaging
     std::cout << "\n--- Secure Messaging ---" << std::endl;
@@ -80,32 +104,7 @@ int main() {
     auto sig = threshold_sigs->combine_shares({shares[0], shares[1], shares[2]});
     threshold_sigs->verify_signature(sig, "Transaction");
     
-    // Double Ratchet
-    std::cout << "\n--- Double Ratchet ---" << std::endl;
-    double_ratchet->initialize_session("bob");
-    auto mk = double_ratchet->derive_message_key(true);
-    double_ratchet->ratchet_forward();
-    
-    // Mesh Network
-    std::cout << "\n--- Mesh Network ---" << std::endl;
-    mesh_network->add_node("node1", "192.168.1.10");
-    mesh_network->add_node("node2", "192.168.1.11");
-    mesh_network->connect_nodes("node1", "node2");
-    auto route_msg = mesh_network->route_message("node1", "node2", "Hello mesh!");
-    
-    // QKD
-    std::cout << "\n--- QKD (BB84) ---" << std::endl;
-    auto qkd_session = qkd->start_session();
-    qkd->transmit_photons(qkd_session);
-    qkd->sift_key(qkd_session);
-    auto final_key = qkd->generate_final_key(qkd_session);
-    
-    // ZK Proofs
-    std::cout << "\n--- Zero-Knowledge Proofs ---" << std::endl;
-    auto proof = zkp->create_proof("secret", "public");
-    zkp->verify_proof(proof);
-    
-    std::cout << "\n=== All v18.0 Modules Initialized ===" << std::endl;
+    std::cout << "\n=== All v19.0 Modules Initialized ===" << std::endl;
     
     return 0;
 }
