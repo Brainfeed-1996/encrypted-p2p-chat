@@ -12,8 +12,34 @@ endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
 
+# Source files - Credentials modules
+set(CREDENTIALS_SOURCES
+    src/credentials/sdjwt.cpp
+)
+
+# Source files - Privacy modules
+set(PRIVACY_SOURCES
+    src/privacy/pir.cpp
+    src/privacy/differential_privacy.cpp
+    src/privacy/metadata_protection.cpp
+)
+
+# Source files - Enclave modules
+set(ENCLAVE_SOURCES
+    src/enclave/secure_enclave.cpp
+    src/enclave/pq3_protocol.cpp
+)
+
+# Include directories
 include_directories(include)
-add_executable(p2p_chat src/main.cpp)
+
+# Executable
+add_executable(p2p_chat 
+    src/main.cpp
+    ${CREDENTIALS_SOURCES}
+    ${PRIVACY_SOURCES}
+    ${ENCLAVE_SOURCES}
+)
 
 if(UNIX)
     find_package(Threads REQUIRED)
