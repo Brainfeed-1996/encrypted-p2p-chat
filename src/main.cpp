@@ -1,11 +1,12 @@
 /**
- * Encrypted P2P Chat v20.0
+ * Encrypted P2P Chat v21.0
  * Next-Generation Web3 Communication Suite
  * 
- * v20.0 Features:
- * - All v19 modules PLUS:
- * - Secure Video Conferencing
- * - Attribute-Based Encryption
+ * v21.0 Features:
+ * - All v20 modules PLUS:
+ * - Ring Signatures
+ * - Confidential Transactions
+ * - Private Contact Sync
  * 
  * Author: Olivier Robert-Duboille
  */
@@ -41,14 +42,17 @@
 #include "include/homomorphic_encryption.h"
 #include "include/secure_video_conferencing.h"
 #include "include/attribute_based_encryption.h"
+#include "include/ring_signatures.h"
+#include "include/confidential_transactions.h"
+#include "include/private_contact_sync.h"
 
 int main() {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     
     std::cout << R"(
     ╔═══════════════════════════════════════════════════════════════════════════════════════════════╗
-    ║     Encrypted P2P Chat v20.0 - Advanced Communication Suite                    ║
-    ║     SD-JWT • MPC • FHE • ABE • Video • ZK • PQC • QKD • Mesh Network            ║
+    ║     Encrypted P2P Chat v21.0 - Advanced Privacy & Anonymity Suite               ║
+    ║     Ring Sigs • CT • Private Sync • ABE • Video • FHE • ZK • PQC • QKD           ║
     ║     Author: Olivier Robert-Duboille                                                  ║
     ╚═══════════════════════════════════════════════════════════════════════════════════════════════╝
     )" << std::endl;
@@ -74,56 +78,72 @@ int main() {
     std::unique_ptr<Crypto::HomomorphicEncryption> homomorphic(new Crypto::HomomorphicEncryption());
     std::unique_ptr<Crypto::SecureVideoConferencing> video_conf(new Crypto::SecureVideoConferencing());
     std::unique_ptr<Crypto::AttributeBasedEncryption> abe(new Crypto::AttributeBasedEncryption());
+    std::unique_ptr<Crypto::RingSignatures> ring_sigs(new Crypto::RingSignatures());
+    std::unique_ptr<Crypto::ConfidentialTransactions> ct(new Crypto::ConfidentialTransactions());
+    std::unique_ptr<Crypto::PrivateContactSync> contact_sync(new Crypto::PrivateContactSync());
     
-    std::cout << "\n=== v20.0 Advanced Communication Demo ===" << std::endl;
+    std::cout << "\n=== v21.0 Advanced Privacy Demo ===" << std::endl;
+    
+    // Ring Signatures
+    std::cout << "\n--- Ring Signatures (Monero-style) ---" << std::endl;
+    auto ring_keys = ring_sigs->generate_key_pair();
+    std::vector<std::vector<uint8_t>> ring_members = {{0x10, 0x11}, {0x20, 0x21}, {0x30, 0x31}};
+    auto ring_sig = ring_sigs->create_ring_signature("secret_message", ring_members, ring_keys.private_key);
+    ring_sigs->verify_ring_signature(ring_sig);
+    auto linkable_tag = ring_sigs->create_linkable_tag("anonymous_group");
+    ring_sigs->verify_linkability(linkable_tag);
+    ring_sigs->detect_double_spending(linkable_tag);
+    ring_sigs->generate_ring_report();
+    
+    // Confidential Transactions
+    std::cout << "\n--- Confidential Transactions ---" << std::endl;
+    auto commitment = ct->create_commitment(1000000);
+    Crypto::Input input;
+    input.amount = 1000000;
+    input.outpoint = "prev_tx_output";
+    Crypto::Output output;
+    output.amount = 900000;
+    output.address = "recipient_address";
+    auto ct_tx = ct->create_transaction({input}, {output}, 100000);
+    auto range_proof = ct->generate_range_proof(900000);
+    ct->verify_range_proof(range_proof);
+    ct->verify_transaction(ct_tx);
+    ct->verify_balance(ct_tx);
+    ct->generate_ct_report();
+    
+    // Private Contact Sync
+    std::cout << "\n--- Private Contact Sync ---" << std::endl;
+    contact_sync->initialize();
+    auto contact_id = contact_sync->add_contact("Alice", "+1234567890", "alice@email.com", "alice_pub_key");
+    contact_sync->update_contact(contact_id, "updated_data");
+    auto sync_pkg = contact_sync->create_sync_package(1); // incremental
+    contact_sync->process_sync_package(sync_pkg);
+    auto diffs = contact_sync->generate_diff();
+    std::vector<std::string> set_a = {"alice", "bob", "charlie"};
+    std::vector<std::string> set_b = {"bob", "charlie", "david"};
+    auto intersection = contact_sync->private_intersection(set_a, set_b);
+    auto union_result = contact_sync->private_union(set_a, set_b);
+    contact_sync->generate_sync_report();
     
     // Secure Video Conferencing
     std::cout << "\n--- Secure Video Conferencing ---" << std::endl;
     video_conf->initialize();
     auto conference = video_conf->create_conference("alice", 10);
-    video_conf->join_conference(conference.conference_id, "bob");
-    video_conf->join_conference(conference.conference_id, "charlie");
     video_conf->enable_e2e_encryption(true);
     video_conf->enable_screen_sharing(true);
-    video_conf->start_recording(conference.conference_id);
-    
-    std::vector<uint8_t> frame_data(1920 * 1080 * 3 / 2, 0xAA);
-    bool encoded;
-    auto encoded_frame = video_conf->encode_video_frame(frame_data, encoded);
-    video_conf->decode_video_frame(encoded_frame);
-    video_conf->stop_recording(conference.conference_id);
     video_conf->generate_conference_report();
     
     // Attribute-Based Encryption
     std::cout << "\n--- Attribute-Based Encryption (ABE) ---" << std::endl;
-    std::vector<std::string> attrs = {"department:engineering", "clearance:high", "location:france"};
+    std::vector<std::string> attrs = {"department:engineering", "clearance:high"};
     auto abe_keys = abe->generate_keys(attrs);
     auto user_key = abe->derive_user_key(abe_keys, {"department:engineering", "clearance:high"});
     std::string policy = "department:engineering AND clearance:high";
-    std::vector<uint8_t> sensitive_data = {0x01, 0x02, 0x03, 0x04, 0x05};
-    auto ct = abe->encrypt(sensitive_data, policy);
-    auto decrypted = abe->decrypt(ct, user_key);
+    auto ct_abe = abe->encrypt({0x01, 0x02, 0x03}, policy);
+    auto decrypted = abe->decrypt(ct_abe, user_key);
     abe->generate_abe_report();
     
-    // Secure Drop
-    std::cout << "\n--- Secure Drop ---" << std::endl;
-    secure_drop->initialize();
-    secure_drop->configure({100, 24, true, true, {"*"}});
-    auto file_id = secure_drop->upload_file("alice", "file data here", "document.pdf", "application/pdf");
-    secure_drop->verify_integrity(file_id);
-    secure_drop->generate_audit_log();
-    
-    // Homomorphic Encryption
-    std::cout << "\n--- Homomorphic Encryption (BFV/CKKS) ---" << std::endl;
-    auto he_keys = homomorphic->generate_key_pair(4096);
-    std::vector<int64_t> plaintext = {1, 2, 3, 4, 5};
-    auto ciphertext = homomorphic->encrypt(plaintext, he_keys.public_key);
-    auto sum = homomorphic->add(ciphertext, ciphertext);
-    auto product = homomorphic->multiply(ciphertext, ciphertext);
-    homomorphic->bootstrap(ciphertext);
-    homomorphic->print_stats();
-    
-    std::cout << "\n=== All v20.0 Modules Initialized ===" << std::endl;
+    std::cout << "\n=== All v21.0 Modules Initialized ===" << std::endl;
     
     return 0;
 }

@@ -27,6 +27,7 @@ set(PRIVACY_SOURCES
     src/privacy/fhe_engine.cpp
     src/privacy/steganography.cpp
     src/privacy/homomorphic_encryption.cpp
+    src/privacy/private_contact_sync.cpp
 )
 
 # Source files - Enclave modules
@@ -45,6 +46,8 @@ set(CRYPTO_SOURCES
     src/crypto/double_ratchet.cpp
     src/crypto/threshold_signatures.cpp
     src/crypto/attribute_based_encryption.cpp
+    src/crypto/ring_signatures.cpp
+    src/crypto/confidential_transactions.cpp
 )
 
 # Source files - Network modules
