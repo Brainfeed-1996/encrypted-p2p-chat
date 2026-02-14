@@ -61,6 +61,9 @@ set(NETWORK_SOURCES
     src/network/secure_messaging.cpp
     src/network/secure_drop.cpp
     src/network/secure_video_conferencing.cpp
+    src/network/secure_messaging_v2.cpp
+    src/network/secure_cloud_storage.cpp
+    src/network/secure_voice_video_v2.cpp
 )
 
 # Include directories

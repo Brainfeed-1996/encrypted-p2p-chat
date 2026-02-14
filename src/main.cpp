@@ -1,12 +1,12 @@
 /**
- * Encrypted P2P Chat v21.0
+ * Encrypted P2P Chat v22.0
  * Next-Generation Web3 Communication Suite
  * 
- * v21.0 Features:
- * - All v20 modules PLUS:
- * - Ring Signatures
- * - Confidential Transactions
- * - Private Contact Sync
+ * v22.0 Features:
+ * - All v21 modules PLUS:
+ * - Secure Messaging V2 (Modern E2E)
+ * - Secure Cloud Storage
+ * - Secure Voice/Video V2 (WebRTC)
  * 
  * Author: Olivier Robert-Duboille
  */
@@ -45,16 +45,19 @@
 #include "include/ring_signatures.h"
 #include "include/confidential_transactions.h"
 #include "include/private_contact_sync.h"
+#include "include/secure_messaging_v2.h"
+#include "include/secure_cloud_storage.h"
+#include "include/secure_voice_video_v2.h"
 
 int main() {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     
     std::cout << R"(
-    ╔═══════════════════════════════════════════════════════════════════════════════════════════════╗
-    ║     Encrypted P2P Chat v21.0 - Advanced Privacy & Anonymity Suite               ║
-    ║     Ring Sigs • CT • Private Sync • ABE • Video • FHE • ZK • PQC • QKD           ║
+    ╔═══════════════════════════════════════════════════════════════════════════════════════════════════════╗
+    ║     Encrypted P2P Chat v22.0 - Ultimate Privacy Suite                             ║
+    ║     Secure Cloud • Voice V2 • Messaging V2 • Ring Sigs • CT • FHE • ABE • ZK • PQC    ║
     ║     Author: Olivier Robert-Duboille                                                  ║
-    ╚═══════════════════════════════════════════════════════════════════════════════════════════════╝
+    ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════╝
     )" << std::endl;
     
     std::unique_ptr<Crypto::SDJWT> sdjwt(new Crypto::SDJWT());
@@ -81,69 +84,75 @@ int main() {
     std::unique_ptr<Crypto::RingSignatures> ring_sigs(new Crypto::RingSignatures());
     std::unique_ptr<Crypto::ConfidentialTransactions> ct(new Crypto::ConfidentialTransactions());
     std::unique_ptr<Crypto::PrivateContactSync> contact_sync(new Crypto::PrivateContactSync());
+    std::unique_ptr<Crypto::SecureMessagingV2> messaging_v2(new Crypto::SecureMessagingV2());
+    std::unique_ptr<Crypto::SecureCloudStorage> cloud_storage(new Crypto::SecureCloudStorage());
+    std::unique_ptr<Crypto::SecureVoiceVideoV2> media_v2(new Crypto::SecureVoiceVideoV2());
     
-    std::cout << "\n=== v21.0 Advanced Privacy Demo ===" << std::endl;
+    std::cout << "\n=== v22.0 Ultimate Privacy Demo ===" << std::endl;
+    
+    // Secure Messaging V2
+    std::cout << "\n--- Secure Messaging V2 ---" << std::endl;
+    messaging_v2->initialize();
+    messaging_v2->enable_forward_secrecy(true);
+    messaging_v2->enable_read_receipts(true);
+    messaging_v2->enable_screenshot_detection(true);
+    auto conv = messaging_v2->create_conversation({"alice", "bob", "charlie"});
+    auto msg = messaging_v2->send_message(conv.conversation_id, "alice", "Hello V2 world!", false, 3600);
+    messaging_v2->rotate_group_key(conv.conversation_id);
+    messaging_v2->generate_messaging_report();
+    
+    // Secure Cloud Storage
+    std::cout << "\n--- Secure Cloud Storage ---" << std::endl;
+    cloud_storage->initialize();
+    cloud_storage->enable_zero_knowledge(true);
+    cloud_storage->enable_file_deduplication(true);
+    cloud_storage->enable_versioning(true);
+    auto folder = cloud_storage->create_folder("alice", "Documents");
+    auto file = cloud_storage->upload_file("alice", "secret.txt", {0x01, 0x02, 0x03, 0x04}, folder.file_id);
+    cloud_storage->share_file(file.file_id, {"bob", "view", 0, false});
+    auto quota = cloud_storage->get_quota("alice");
+    cloud_storage->generate_storage_report();
+    
+    // Secure Voice/Video V2
+    std::cout << "\n--- Secure Voice/Video V2 (WebRTC) ---" << std::endl;
+    media_v2->initialize();
+    media_v2->enable_e2e_encryption(true);
+    media_v2->enable_dtls(true);
+    media_v2->enable_srtp(true);
+    media_v2->enable_turn_stun(true);
+    auto call = media_v2->initiate_call("alice", "bob", "video");
+    media_v2->answer_call(call.session_id);
+    auto audio_frame = media_v2->capture_audio();
+    auto video_frame = media_v2->capture_video(false);
+    media_v2->encode_video_frame(video_frame);
+    media_v2->decode_video_frame(video_frame);
+    auto quality = media_v2->get_call_quality(call.session_id);
+    media_v2->end_call(call.session_id);
+    media_v2->generate_media_report();
     
     // Ring Signatures
     std::cout << "\n--- Ring Signatures (Monero-style) ---" << std::endl;
     auto ring_keys = ring_sigs->generate_key_pair();
-    std::vector<std::vector<uint8_t>> ring_members = {{0x10, 0x11}, {0x20, 0x21}, {0x30, 0x31}};
-    auto ring_sig = ring_sigs->create_ring_signature("secret_message", ring_members, ring_keys.private_key);
+    std::vector<std::vector<uint8_t>> ring_members = {{0x10, 0x11}, {0x20, 0x21}};
+    auto ring_sig = ring_sigs->create_ring_signature("anonymous_vote", ring_members, ring_keys.private_key);
     ring_sigs->verify_ring_signature(ring_sig);
-    auto linkable_tag = ring_sigs->create_linkable_tag("anonymous_group");
-    ring_sigs->verify_linkability(linkable_tag);
-    ring_sigs->detect_double_spending(linkable_tag);
+    auto linkable_tag = ring_sigs->create_linkable_tag("voting_group");
     ring_sigs->generate_ring_report();
     
     // Confidential Transactions
     std::cout << "\n--- Confidential Transactions ---" << std::endl;
-    auto commitment = ct->create_commitment(1000000);
+    auto commitment = ct->create_commitment(5000000);
     Crypto::Input input;
-    input.amount = 1000000;
-    input.outpoint = "prev_tx_output";
+    input.amount = 5000000;
     Crypto::Output output;
-    output.amount = 900000;
-    output.address = "recipient_address";
-    auto ct_tx = ct->create_transaction({input}, {output}, 100000);
-    auto range_proof = ct->generate_range_proof(900000);
+    output.amount = 4500000;
+    auto ct_tx = ct->create_transaction({input}, {output}, 500000);
+    auto range_proof = ct->generate_range_proof(4500000);
     ct->verify_range_proof(range_proof);
     ct->verify_transaction(ct_tx);
-    ct->verify_balance(ct_tx);
     ct->generate_ct_report();
     
-    // Private Contact Sync
-    std::cout << "\n--- Private Contact Sync ---" << std::endl;
-    contact_sync->initialize();
-    auto contact_id = contact_sync->add_contact("Alice", "+1234567890", "alice@email.com", "alice_pub_key");
-    contact_sync->update_contact(contact_id, "updated_data");
-    auto sync_pkg = contact_sync->create_sync_package(1); // incremental
-    contact_sync->process_sync_package(sync_pkg);
-    auto diffs = contact_sync->generate_diff();
-    std::vector<std::string> set_a = {"alice", "bob", "charlie"};
-    std::vector<std::string> set_b = {"bob", "charlie", "david"};
-    auto intersection = contact_sync->private_intersection(set_a, set_b);
-    auto union_result = contact_sync->private_union(set_a, set_b);
-    contact_sync->generate_sync_report();
-    
-    // Secure Video Conferencing
-    std::cout << "\n--- Secure Video Conferencing ---" << std::endl;
-    video_conf->initialize();
-    auto conference = video_conf->create_conference("alice", 10);
-    video_conf->enable_e2e_encryption(true);
-    video_conf->enable_screen_sharing(true);
-    video_conf->generate_conference_report();
-    
-    // Attribute-Based Encryption
-    std::cout << "\n--- Attribute-Based Encryption (ABE) ---" << std::endl;
-    std::vector<std::string> attrs = {"department:engineering", "clearance:high"};
-    auto abe_keys = abe->generate_keys(attrs);
-    auto user_key = abe->derive_user_key(abe_keys, {"department:engineering", "clearance:high"});
-    std::string policy = "department:engineering AND clearance:high";
-    auto ct_abe = abe->encrypt({0x01, 0x02, 0x03}, policy);
-    auto decrypted = abe->decrypt(ct_abe, user_key);
-    abe->generate_abe_report();
-    
-    std::cout << "\n=== All v21.0 Modules Initialized ===" << std::endl;
+    std::cout << "\n=== All v22.0 Modules Initialized ===" << std::endl;
     
     return 0;
 }
