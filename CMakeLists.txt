@@ -16,6 +16,7 @@ message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERS
 set(CREDENTIALS_SOURCES
     src/credentials/sdjwt.cpp
     src/credentials/mpc_wallet.cpp
+    src/credentials/blockchain_identity.cpp
 )
 
 # Source files - Privacy modules
@@ -43,6 +44,8 @@ set(CRYPTO_SOURCES
 set(NETWORK_SOURCES
     src/network/anonymous_routing.cpp
     src/network/secure_file_transfer.cpp
+    src/network/voice_encryption.cpp
+    src/network/group_chat.cpp
 )
 
 # Include directories

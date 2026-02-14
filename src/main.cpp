@@ -1,13 +1,13 @@
 /**
- * Encrypted P2P Chat v12.0
+ * Encrypted P2P Chat v13.0
  * Next-Generation Web3 Communication Suite
- * Extended Modular Architecture with Crypto & Network
+ * Complete Modular Architecture
  * 
- * v12.0 Features:
- * - All v11 modules PLUS:
- * - Anonymous Routing (Tor-like)
- * - Post-Quantum Crypto (Kyber/Dilithium/SPHINCS)
- * - Secure File Transfer
+ * v13.0 Features:
+ * - All v12 modules PLUS:
+ * - Blockchain Identity (DID)
+ * - Voice Encryption (SRTP/ZRTP)
+ * - Group Chat with Sender Keys
  * 
  * Author: Olivier Robert-Duboille
  */
@@ -29,16 +29,19 @@
 #include "include/post_quantum_crypto.h"
 #include "include/anonymous_routing.h"
 #include "include/secure_file_transfer.h"
+#include "include/blockchain_identity.h"
+#include "include/voice_encryption.h"
+#include "include/group_chat.h"
 
 int main() {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     
     std::cout << R"(
-    ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-    ║     Encrypted P2P Chat v12.0 - Extended Web3 Suite with Crypto & Network Modules                                           ║
-    ║     SD-JWT • MPC • FHE • DAO • TLS • PQC • Anonymous Routing • Secure File Transfer                                    ║
-    ║     Author: Olivier Robert-Duboille                                                                                      ║
-    ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+    ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+    ║     Encrypted P2P Chat v13.0 - Complete Web3 Communication Suite                                                                         ║
+    ║     SD-JWT • MPC • FHE • DAO • PQC • DID • Voice Encryption • Group Chat • Anonymous Routing                                              ║
+    ║     Author: Olivier Robert-Duboille                                                                                                      ║
+    ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
     )" << std::endl;
     
     // Initialize all modules
@@ -56,8 +59,11 @@ int main() {
     std::unique_ptr<Crypto::PostQuantumCrypto> pq_crypto(new Crypto::PostQuantumCrypto());
     std::unique_ptr<Crypto::AnonymousRouting> anon_routing(new Crypto::AnonymousRouting());
     std::unique_ptr<Crypto::SecureFileTransfer> file_transfer(new Crypto::SecureFileTransfer());
+    std::unique_ptr<Crypto::BlockchainIdentity> blockchain_id(new Crypto::BlockchainIdentity());
+    std::unique_ptr<Crypto::VoiceEncryption> voice_enc(new Crypto::VoiceEncryption());
+    std::unique_ptr<Crypto::GroupChat> group_chat(new Crypto::GroupChat());
     
-    std::cout << "\n=== v12.0 Extended Suite Demo ===" << std::endl;
+    std::cout << "\n=== v13.0 Complete Suite Demo ===" << std::endl;
     
     // 1. SD-JWT
     std::cout << "\n--- SD-JWT Credentials ---" << std::endl;
@@ -68,44 +74,37 @@ int main() {
     auto cred = sdjwt->issue_credential("did:ethr:alice", claims);
     auto pres = sdjwt->create_presentation(cred, {"name", "country"});
     
-    // 2. PIR
-    std::cout << "\n--- Private Information Retrieval ---" << std::endl;
-    auto query = pir_client->create_query(42, 1000);
-    std::vector<std::string> server_response = {pir_server->query(42)};
-    auto pir_result = pir_client->process_response(server_response);
+    // 2. Blockchain Identity
+    std::cout << "\n--- Blockchain Identity (DID) ---" << std::endl;
+    auto did_doc = blockchain_id->resolve_did("did:ethr:0x742F8c3C2f2c5e7dF8A3b6C2E1F0A9B8C7D6E5F");
+    blockchain_id->register_did(did_doc);
+    blockchain_id->print_did_document(did_doc);
     
-    // 3. Secure Enclave
-    std::cout << "\n--- Secure Enclave (Intel SGX) ---" << std::endl;
-    auto enclave_info = secure_enclave->create_enclave();
-    auto attestation = secure_enclave->generate_attestation("challenge_nonce_12345");
+    // 3. Voice Encryption
+    std::cout << "\n--- Voice Encryption ---" << std::endl;
+    auto voice_session = voice_enc->start_session("alice", "bob");
+    std::vector<int16_t> pcm_data(160, 100);
+    auto encrypted_voice = voice_enc->encrypt_voice_frame(pcm_data, voice_session);
+    auto decrypted_voice = voice_enc->decrypt_voice_frame(encrypted_voice, voice_session);
+    voice_enc->end_session(voice_session);
     
-    // 4. Differential Privacy
-    std::cout << "\n--- Differential Privacy ---" << std::endl;
-    dp->set_privacy_parameters(1.0, 0.0001);
-    double noisy_value = dp->add_laplace_noise(100.0, 1.0);
-    std::cout << "True Value: 100.0, With Noise: " << noisy_value << std::endl;
-    dp->print_privacy_budget();
+    // 4. Group Chat
+    std::cout << "\n--- Group Chat ---" << std::endl;
+    auto group = group_chat->create_group("Project Alpha", "alice");
+    group_chat->add_member(group, "bob");
+    group_chat->add_member(group, "charlie");
+    auto msg = group_chat->send_message(group, "alice", "Hello everyone!");
+    auto received = group_chat->receive_message(group, msg, "bob");
     
-    // 5. PQ3 Protocol
-    std::cout << "\n--- PQ3 Signal Protocol ---" << std::endl;
-    pq3->initialize_session();
-    auto encrypted = pq3->encrypt_message("Hello, secure world!");
-    
-    // 6. Metadata Protection
-    std::cout << "\n--- Metadata Protection ---" << std::endl;
-    metadata_protection->setup_mix_network(5);
-    metadata_protection->send_through_mix("Secret message", "bob");
-    
-    // 7. MPC Wallet
+    // 5. MPC Wallet
     std::cout << "\n--- MPC Wallet ---" << std::endl;
     auto shares = mpc_wallet->generate_shares(5, 3);
     auto tx = mpc_wallet->create_transaction("0x742F8c3C2f2c5e7dF8A3b6C2", 1.5);
     mpc_wallet->sign_transaction(tx.tx_id, shares[0]);
     mpc_wallet->sign_transaction(tx.tx_id, shares[1]);
-    mpc_wallet->sign_transaction(tx.tx_id, shares[2]);
     mpc_wallet->finalize_transaction(tx.tx_id, 3);
     
-    // 8. FHE
+    // 6. FHE
     std::cout << "\n--- Fully Homomorphic Encryption ---" << std::endl;
     auto fhe_keys = fhe_engine->generate_keypair(512);
     auto enc1 = fhe_engine->encrypt(100.0);
@@ -114,38 +113,18 @@ int main() {
     auto result = fhe_engine->decrypt(sum);
     std::cout << "Calculation: 100 + 50 = " << result << " (verified)" << std::endl;
     
-    // 9. DAO Governance
-    std::cout << "\n--- DAO Governance ---" << std::endl;
-    auto proposal = dao->create_proposal("Add New Moderator", {"Yes", "No", "Abstain"});
-    dao->cast_vote("0xAlice", 1, "Yes", 500000);
-    dao->execute_proposal(1);
-    
-    // 10. TLS Handshake
-    std::cout << "\n--- Quantum-Resistant TLS 1.3 ---" << std::endl;
-    auto tls_result = tls_handshake->perform_handshake("secure-messenger.com");
-    
-    // 11. Post-Quantum Crypto
+    // 7. Post-Quantum Crypto
     std::cout << "\n--- Post-Quantum Cryptography ---" << std::endl;
     pq_crypto->print_capabilities();
     auto kyber_kp = pq_crypto->generate_kyber_keypair();
-    auto shared = pq_crypto->kyber_encapsulate(kyber_kp.public_key);
-    auto dilithium_sig = pq_crypto->dilithium_sign(std::vector<uint8_t>(10, 0x42), kyber_kp.secret_key);
-    pq_crypto->dilithium_verify(std::vector<uint8_t>(10, 0x42), dilithium_sig, kyber_kp.public_key);
     
-    // 12. Anonymous Routing
+    // 8. Anonymous Routing
     std::cout << "\n--- Anonymous Routing ---" << std::endl;
     anon_routing->setup_network(10);
     auto route = anon_routing->create_route();
     anon_routing->send_anonymously("Secret message", route);
     
-    // 13. Secure File Transfer
-    std::cout << "\n--- Secure File Transfer ---" << std::endl;
-    auto transfer = file_transfer->start_transfer("document.pdf", 1048576, "bob");
-    auto chunk = file_transfer->create_chunk(transfer, 0);
-    file_transfer->verify_chunk(chunk);
-    file_transfer->complete_transfer(transfer);
-    
-    std::cout << "\n=== All v12.0 Modules Initialized ===" << std::endl;
+    std::cout << "\n=== All v13.0 Modules Initialized ===" << std::endl;
     
     return 0;
 }
