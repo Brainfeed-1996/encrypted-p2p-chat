@@ -6,20 +6,20 @@
 
 ---
 
-## 📋 Table des Matières
+## 📋 Table of Contents
 
-### Documentation Principale
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Architecture système complète
-- **[CRYPTOGRAPHY.md](CRYPTOGRAPHY.md)** - Détails cryptographiques avancés
-- **[FEATURES.md](FEATURES.md)** - Catalogue complet des 43 modules
-- **[USAGE.md](USAGE.md)** - Guide d'installation et d'utilisation
-- **[API.md](API.md)** - Référence API complète
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guide de contribution
+### Main Documentation
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Complete system architecture
+- **[CRYPTOGRAPHY.md](CRYPTOGRAPHY.md)** - Advanced cryptographic details
+- **[FEATURES.md](FEATURES.md)** - Complete catalog of 43 modules
+- **[USAGE.md](USAGE.md)** - Installation and usage guide
+- **[API.md](API.md)** - Complete API reference
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guide
 
-### Liens Rapides
+### Quick Links
 - [Installation](#installation)
-- [Utilisation Rapide](#utilisation-rapide)
-- [Cryptographie](#cryptographie)
+- [Quick Usage](#quick-usage)
+- [Cryptography](#cryptography)
 - [Modules](#modules)
 - [Performance](#performance)
 
@@ -27,14 +27,14 @@
 
 ## 🚀 Installation
 
-### Prérequis
+### Prerequisites
 
 ```bash
 # Ubuntu/Debian
 sudo apt-get install build-essential cmake libboost-all-dev libssl-dev libcrypto++-dev
 
 # Windows
-Visual Studio 2022+ avec C++ Desktop Development
+Visual Studio 2022+ with C++ Desktop Development
 
 # macOS
 brew install cmake boost openssl
@@ -52,7 +52,7 @@ cmake --build . --parallel
 
 ---
 
-## ⚡ Utilisation Rapide
+## ⚡ Quick Usage
 
 ```cpp
 #include "secure_chat.h"
@@ -64,19 +64,19 @@ int main() {
     config.identity_type = SecureChat::IdentityType::DID;
     config.confidential_computing = true;
     
-    // Initialisation
+    // Initialization
     SecureChat::ChatEngine engine;
     if (!engine.initialize(config)) {
         return 1;
     }
     
-    // Création de l'identité
+    // Identity creation
     auto identity = engine.create_identity();
     
-    // Établissement de la session sécurisée
+    // Secure session establishment
     auto session = engine.establish_secure_session("bob@domain.com");
     
-    // Envoi de message
+    // Message sending
     auto message = engine.encrypt_message(session, "Hello, this is encrypted!");
     engine.send_message(message);
     
@@ -86,31 +86,31 @@ int main() {
 
 ---
 
-## 🔐 Cryptographie
+## 🔐 Cryptography
 
-### Algorithmes Post-Quantique (NIST Level 5)
+### Post-Quantum Algorithms (NIST Level 5)
 
-| Algorithme | Type | Sécurité | Status |
-|------------|------|----------|--------|
-| **Kyber-1024** | KEM | 256-bit | ✅ Standardisé |
-| **Dilithium-5** | Signature | 256-bit | ✅ Standardisé |
-| **SPHINCS+-128f** | Signature | 128-bit | ✅ Standardisé |
-| **Falcon-512** | Signature | 256-bit | ✅ Finaliste |
+| Algorithm | Type | Security | Status |
+|-----------|------|----------|--------|
+| **Kyber-1024** | KEM | 256-bit | ✅ Standardized |
+| **Dilithium-5** | Signature | 256-bit | ✅ Standardized |
+| **SPHINCS+-128f** | Signature | 128-bit | ✅ Standardized |
+| **Falcon-512** | Signature | 256-bit | ✅ Finalist |
 | **BIKE-1** | KEM | 128-bit | ⚠️ Candidate |
 
-### Techniques Avancées
+### Advanced Techniques
 
-- **Homomorphic Encryption**: Calcul sur données chiffrées
-- **Zero-Knowledge Proofs**: Vérification sans révélation
-- **Threshold Cryptography**: Partage de clés
-- **Ring Signatures**: Anonymat collectif
-- **Attribute-Based Encryption**: Contrôle d'accès basé sur attributs
+- **Homomorphic Encryption**: Compute on encrypted data
+- **Zero-Knowledge Proofs**: Verification without disclosure
+- **Threshold Cryptography**: Key sharing
+- **Ring Signatures**: Collective anonymity
+- **Attribute-Based Encryption**: Attribute-based access control
 
 ---
 
 ## 📊 Modules (43 Modules)
 
-### Cryptographie (15 modules)
+### Cryptography (15 modules)
 - Kyber KEM Implementation
 - Dilithium Signature Implementation  
 - SPHINCS+ Implementation
@@ -127,7 +127,7 @@ int main() {
 - X25519/X448 Implementation
 - Ed25519/Ed448 Implementation
 
-### Réseau (12 modules)
+### Network (12 modules)
 - libp2p Implementation
 - Mesh Networking
 - Tor/I2P Integration
@@ -141,7 +141,7 @@ int main() {
 - Private Contact Sync
 - Decentralized DNS
 
-### Confidentialité (8 modules)
+### Privacy (8 modules)
 - Confidential Computing (SGX)
 - TrustZone Integration
 - SEV Support
@@ -151,7 +151,7 @@ int main() {
 - Differential Privacy
 - Secure Multi-Party Computation
 
-### Identité (8 modules)
+### Identity (8 modules)
 - Blockchain DID Implementation
 - Verifiable Credentials
 - SD-JWT Implementation
@@ -165,8 +165,8 @@ int main() {
 
 ## 📈 Performance
 
-| Métrique | Valeur |
-|----------|--------|
+| Metric | Value |
+|--------|-------|
 | **Key Exchange** | < 100ms (Kyber-1024) |
 | **Message Encryption** | < 5ms (AES-256-GCM) |
 | **Signature Verification** | < 20ms (Dilithium-5) |
@@ -176,55 +176,10 @@ int main() {
 
 ---
 
-## 📄 Licence
+## 📄 License
 
-MIT License - Voir [LICENSE](LICENSE) pour les détails.
-
----
-
-**⭐ Star ce projet si utile!**�──────────────────────────┘
-```
-
-## 🔑 Algorithmes Cryptographiques
-
-### Post-Quantique (NIST Level 5)
-- **Kyber-1024** - Key Encapsulation
-- **Dilithium-5** - Signatures
-- **SPHINCS+-256f** - Signatures hash-based
-- **Falcon-1024** - Signatures short
-- **BIKE** - Key Encapsulation Level 3
-
-### Classique (Hybride)
-- **X25519** - ECDH
-- **AES-256-GCM** - Chiffrement symétrique
-- **ChaCha20-Poly1305** - Chiffrement
-- **SHA-3-512** - Hashing
-
-### Avancé
-- **Chiffrement Homomorphe (FHE)** - Calcul sur données chiffrées
-- **Zero-Knowledge Proofs** - zk-SNARKs, STARKs, Bulletproofs
-- **Signatures de Seuil (Threshold)** - MPC
-- **Signatures de Anneau** - Anonymat
-
-## 📱 Plateformes Supportées
-
-- **Desktop:** Windows 10+, Linux (Ubuntu 20.04+), macOS 11+
-- **Mobile:** iOS 14+, Android 10+
-- **Enclaves:** Intel SGX, ARM TrustZone, AMD SEV
-
-## 📄 Licence
-
-**MIT License** - Voir [LICENSE](LICENSE)
-
-## 👤 Auteur
-
-**Olivier Robert-Duboille**  
-GitHub: https://github.com/Brainfeed-1996
+MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-<div align="center">
-
-Fait avec ❤️ par Olivier Robert-Duboille
-
-</div>
+**⭐ Star this project if useful!**
