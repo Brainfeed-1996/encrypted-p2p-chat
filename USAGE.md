@@ -1,14 +1,13 @@
-# Guide d'Utilisation d'Encrypted P2P Chat v25.0
+# Guide d'Utilisation - Encrypted P2P Chat
 
 ## Table des Matières
-
 1. [Installation](#1-installation)
 2. [Configuration](#2-configuration)
 3. [Utilisation Basique](#3-utilisation-basique)
-4. [Exemples de Code](#4-exemples-de-code)
+4. [Utilisation Avancée](#4-utilisation-avancée)
 5. [API Reference](#5-api-reference)
-6. [Dépannage](#6-dépannage)
-7. [Sécurité](#7-sécurité)
+6. [CLI Reference](#6-cli-reference)
+7. [Intégrations](#7-intégrations)
 
 ---
 
@@ -16,124 +15,123 @@
 
 ### 1.1 Prérequis
 
-| Requirement | Version Minimale | Recommandée |
-|-------------|------------------|-------------|
-| **CMake** | 3.16 | 3.25+ |
-| **C++ Compiler** | C++20 | GCC 12+ / Clang 15+ |
-| **OpenSSL** | 3.0 | 3.2+ |
-| **Libsodium** | 1.0 | 1.0.19+ |
-| **Boost** | 1.75 | 1.84+ |
+```bash
+# Ubuntu/Debian
+sudo apt-get install build-essential cmake libboost-all-dev libssl-dev libcrypto++-dev
 
-### 1.2 Installation sur Linux (Ubuntu 22.04+)
+# Windows
+Visual Studio 2022+ avec C++ Desktop Development
+Windows SDK 10.0.22621+
+
+# macOS
+brew install cmake boost openssl
+```
+
+### 1.2 Build
 
 ```bash
-# Installer les dépendances
-sudo apt update
-sudo apt install -y build-essential cmake libssl-dev libsodium-dev \
-    libboost-all-dev pkg-config git
-
-# Cloner le repository
 git clone https://github.com/Brainfeed-1996/encrypted-p2p-chat.git
 cd encrypted-p2p-chat
-
-# Créer le build directory
 mkdir build && cd build
-
-# Configurer avec CMake
-cmake .. \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DENABLE_PQC=ON \
-    -DENABLE_ENCLAVE=OFF \
-    -DENABLE_TESTS=ON
-
-# Compiler
-make -j$(nproc)
-
-# Installer
-sudo make install
+cmake .. -DCMAKE_BUILD_TYPE=Release -A x64
+cmake --build . --config Release --parallel
 ```
 
-### 1.3 Installation sur macOS (Ventura+)
+### 1.3 Docker
 
-```bash
-# Installer Homebrew
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```dockerfile
+FROM ubuntu:22.04
 
-# Installer les dépendances
-brew install cmake openssl libsodium boost pkg-config
+RUN apt-get update && apt-get install -y \
+    build-essential cmake libboost-all-dev libssl-dev \
+    libcrypto++-dev python3 python3-pip
 
-# Configurer les variables d'environnement
-export OPENSSL_ROOT=$(brew --prefix openssl)
-export BOOST_ROOT=$(brew --prefix boost)
+WORKDIR /app
+COPY . .
+RUN mkdir build && cd build && cmake .. && make
 
-# Compiler
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_PQC=ON
-make -j$(sysctl -n hw.ncpu)
-
-# Installer
-sudo make install
+CMD ["./bin/secure_chat"]
 ```
-
-### 1.4 Installation sur Windows
-
-```powershell
-# Ouvrir Developer Command Prompt
-cd C:\Path\To\encrypted-p2p-chat
-mkdir build
-cd build
-cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release -DENABLE_PQC=ON
-cmake --build . --config Release
-cmake --install .
-```
-
-### 1.5 Options de Configuration CMake
-
-| Option | Description |
-|--------|-------------|
-| `ENABLE_PQC` | Activer cryptographie post-quantique |
-| `ENABLE_ENCLAVE` | Activer support SGX/TrustZone |
-| `ENABLE_TESTS` | Inclure les tests unitaires |
-| `ENABLE_DOCS` | Générer documentation |
-| `CMAKE_BUILD_TYPE` | Release/Debug |
 
 ---
 
 ## 2. Configuration
 
-### 2.1 Fichier de Configuration Principal
+### 2.1 Fichier de Configuration JSON
 
 ```json
 {
-  "application": {
-    "name": "Encrypted P2P Chat",
-    "version": "25.0",
-    "data_directory": "~/.local/share/encrypted-p2p-chat"
-  },
-  
   "security": {
-    "pqc": {
-      "enabled": true,
-      "kem_algorithm": "Kyber-1024",
-      "signature_algorithm": "Dilithium-5",
-      "hybrid_mode": true
-    },
-    "encryption": {
-      "symmetric": "AES-256-GCM",
-      "double_ratchet": true,
-      "pq3": true
-    },
-    "identity": {
-      "did_method": "key",
-      "vc_enabled": true
-    }
+    "pqc_algorithm": "KYBER_1024",
+    "signature_algorithm": "DILITHIUM_5",
+    "symmetric_cipher": "AES_256_GCM",
+    "key_exchange_protocol": "DOUBLE_RATCHET"
   },
-  
+  "identity": {
+    "type": "DID",
+    "blockchain": "ETHEREUM",
+    "verification_level": "ZKP"
+  },
   "network": {
-    "protocol": "libp2p",
-    "onion_routing": true,
-    "mixnet": true
+    "transport": "LIBP2P",
+    "anonymity": "ONION_MIXNET",
+    "encryption": "CONFIDENTIAL_COMPUTING"
+  },
+  "performance": {
+    "max_threads": 8,
+    "memory_limit_mb": 512,
+    "timeout_seconds": 30
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "/var/log/secure_chat.log",
+    "audit_trail": true
   }
+}
+```
+
+### 2.2 Configuration par Code
+
+```cpp
+#include "secure_chat.h"
+
+int main() {
+    SecureChat::Config config;
+    
+    // Cryptographie
+    config.pqc_algorithm = SecureChat::PQCAlgorithm::KYBER_1024;
+    config.signature_algorithm = SecureChat::SignatureAlgorithm::DILITHIUM_5;
+    config.symmetric_cipher = SecureChat::SymmetricCipher::AES_256_GCM;
+    config.key_exchange = SecureChat::KeyExchangeProtocol::DOUBLE_RATCHET;
+    
+    // Identité
+    config.identity_type = SecureChat::IdentityType::DID;
+    config.blockchain_network = SecureChat::BlockchainNetwork::ETHEREUM;
+    config.verification_method = SecureChat::VerificationMethod::ZKP;
+    
+    // Réseau
+    config.transport_protocol = SecureChat::TransportProtocol::LIBP2P;
+    config.anonymity_level = SecureChat::AnonymityLevel::ONION_MIXNET;
+    config.confidential_computing = true;
+    
+    // Performance
+    config.max_threads = std::thread::hardware_concurrency();
+    config.memory_limit_mb = 512;
+    config.timeout_seconds = 30;
+    
+    // Logging
+    config.log_level = SecureChat::LogLevel::INFO;
+    config.log_file = "./secure_chat.log";
+    config.audit_trail = true;
+    
+    // Initialisation
+    SecureChat::ChatEngine engine;
+    if (!engine.initialize(config)) {
+        std::cerr << "Échec de l'initialisation" << std::endl;
+        return 1;
+    }
+    
+    return 0;
 }
 ```
 
@@ -141,259 +139,400 @@ cmake --install .
 
 ## 3. Utilisation Basique
 
-### 3.1 Commandes CLI
+### 3.1 Création d'une Identité Sécurisée
 
-```bash
-# Initialiser une nouvelle identité
-encrypted-p2p-chat init
+```cpp
+// Création de l'identité
+auto identity = engine.create_identity();
+std::cout << "Identité créée: " << identity.did << std::endl;
 
-# Créer un nouveau DID
-encrypted-p2p-chat identity create
+// Export de la clé privée (sécurisée)
+auto private_key = identity.export_private_key();
+std::cout << "Clé privée exportée (chiffrée)" << std::endl;
+```
 
-# Démarrer le daemon
-encrypted-p2p-chat daemon start
+### 3.2 Établissement d'une Session Sécurisée
 
-# Envoyer un message
-encrypted-p2p-chat send --to did:example:alice --message "Hello!"
+```cpp
+// Recherche d'un contact
+auto contacts = engine.search_contacts("bob@domain.com");
 
-# Créer un groupe
-encrypted-p2p-chat group create --name "Team" --members "did:example:bob,did:example:charlie"
+// Établissement de la session
+auto session = engine.establish_secure_session(contacts[0].did);
 
-# Démarrer un appel vocal
-encrypted-p2p-chat call voice did:example:alice
+// Vérification de l'authenticité
+if (session.is_verified()) {
+    std::cout << "Session sécurisée établie avec " << session.peer_did << std::endl;
+}
+```
 
-# Partager un fichier
-encrypted-p2p-chat file send --to did:example:bob --file /path/to/file.pdf
+### 3.3 Envoi de Message Chiffré
+
+```cpp
+// Création du message
+SecureChat::Message message;
+message.content = "Bonjour, ce message est chiffré avec la cryptographie post-quantique!";
+message.metadata = {{"type", "text"}, {"priority", "high"}};
+
+// Chiffrement
+auto encrypted_message = engine.encrypt_message(session, message);
+
+// Envoi
+auto result = engine.send_message(encrypted_message);
+if (result.success) {
+    std::cout << "Message envoyé avec succès" << std::endl;
+}
+```
+
+### 3.4 Réception de Message
+
+```cpp
+// Réception
+auto received = engine.receive_message();
+
+// Déchiffrement
+auto decrypted = engine.decrypt_message(received, session);
+
+std::cout << "Message reçu: " << decrypted.content << std::endl;
+std::cout << "Expéditeur: " << decrypted.sender_did << std::endl;
 ```
 
 ---
 
-## 4. Exemples de Code
+## 4. Utilisation Avancée
 
-### 4.1 Initialisation Simple
+### 4.1 Communication Groupée Sécurisée
 
 ```cpp
-#include <encrypted_p2p_chat/secure_chat.h>
+// Création d'un groupe
+auto group = engine.create_secure_group("Project Alpha");
+group.add_member("alice@domain.com");
+group.add_member("bob@domain.com");
 
-int main() {
-    using namespace EncryptedP2PChat;
-    
-    SecurityConfig config;
-    config.enable_pqc = true;
-    config.pqc_kem_algorithm = "Kyber-1024";
-    config.pqc_sign_algorithm = "Dilithium-5";
-    config.enable_hybrid_mode = true;
-    config.enable_double_ratchet = true;
-    config.enable_onion_routing = true;
-    config.enable_metadata_protection = true;
-    config.enable_decentralized_identity = true;
-    
-    SecureChat client;
-    
-    if (!client.initialize(config)) {
-        std::cerr << "Échec de l'initialisation" << std::endl;
-        return 1;
-    }
-    
-    std::cout << "Client initialisé avec succès!" << std::endl;
-    return 0;
+// Envoi de message au groupe
+auto group_message = engine.encrypt_group_message(group, "Réunion demain à 14h");
+engine.send_group_message(group_message);
+```
+
+### 4.2 Appels Audio/Video Sécurisés
+
+```cpp
+// Démarrage d'un appel
+auto call = engine.start_secure_call("charlie@domain.com");
+
+// Configuration audio/video
+call.set_audio_codec(SecureChat::AudioCodec::OPUS);
+call.set_video_codec(SecureChat::VideoCodec::VP9);
+call.set_encryption_level(SecureChat::EncryptionLevel::POST_QUANTUM);
+
+// Gestion de l'appel
+call.on_connected([](){ std::cout << "Appel connecté" << std::endl; });
+call.on_disconnected([](){ std::cout << "Appel terminé" << std::endl; });
+```
+
+### 4.3 Transfert de Fichiers Sécurisé
+
+```cpp
+// Chiffrement du fichier
+auto encrypted_file = engine.encrypt_file("./document.pdf", session);
+
+// Upload sécurisé
+auto upload_result = engine.upload_file(encrypted_file);
+if (upload_result.success) {
+    std::cout << "Fichier uploadé: " << upload_result.file_id << std::endl;
 }
+
+// Partage avec un contact
+engine.share_file(upload_result.file_id, "dave@domain.com");
 ```
 
-### 4.2 Génération de Clés et Identité
+### 4.4 Analyse de Sécurité
 
 ```cpp
-// Générer une paire de clés PQC
-KeyPair pq_keypair = client.generate_keypair("Kyber-1024-Dilithium-5");
+// Audit de sécurité
+auto audit = engine.perform_security_audit();
+std::cout << "Audit de sécurité:" << std::endl;
+std::cout << "  Clés valides: " << audit.valid_keys << "/" << audit.total_keys << std::endl;
+std::cout << "  Sessions sécurisées: " << audit.secure_sessions << std::endl;
+std::cout << "  Vulnérabilités détectées: " << audit.vulnerabilities.size() << std::endl;
 
-// Créer un DID
-std::string my_did = client.create_did(pq_keypair.public_key);
-
-// Émettre une Verifiable Credential
-VerifiableCredential vc;
-vc.type = "ProofOfAge";
-vc.claims["age"] = "18+";
-
-VerifiableCredential my_vc = client.issue_credential(my_did, vc);
-```
-
-### 4.3 Envoi de Message Sécurisé
-
-```cpp
-SecureMessage message;
-message.recipient_did = "did:example:bob";
-message.content = "Bonjour Bob! Ceci est un message sécurisé.";
-
-bool sent = client.send_message(message);
-```
-
-### 4.4 Chat de Groupe
-
-```cpp
-std::vector<std::string> members = {
-    "did:example:alice",
-    "did:example:bob",
-    "did:example:charlie"
-};
-
-std::string group_id = client.create_group("Team Alpha", members);
-
-SecureMessage group_msg;
-group_msg.group_id = group_id;
-group_msg.content = "Réunion à 15h!";
-
-client.send_group_message(group_msg);
-```
-
-### 4.5 MPC Wallet
-
-```cpp
-// Créer un wallet MPC (2-of-3)
-std::string wallet_id = client.create_mpc_wallet(2, 3);
-
-// Signer une transaction
-Transaction tx;
-tx.to = "0x742d35Cc6634C0532925a3b844Bc9e7595f7b3d4";
-tx.amount = 1.5;
-tx.token = "ETH";
-
-SignedTransaction signed_tx = client.sign_transaction(wallet_id, tx);
-```
-
-### 4.6 Authentification ZKP
-
-```cpp
-// Prouver son âge sans révéler l'âge exact
-ZKPProof age_proof = client.create_age_proof(25, 18, 65);
-bool verified = client.verify_age_proof(age_proof, 18, 65);
+// Rapport de menace
+auto threat_report = engine.generate_threat_report();
+for (const auto& threat : threat_report.threats) {
+    std::cout << "[" << threat.severity << "] " << threat.description << std::endl;
+}
 ```
 
 ---
 
 ## 5. API Reference
 
-### 5.1 SecureChat Class
+### 5.1 Classe Principale: ChatEngine
 
 ```cpp
-namespace EncryptedP2PChat {
-
-class SecureChat {
+class ChatEngine {
 public:
     // Initialisation
-    bool initialize(const SecurityConfig& config);
+    bool initialize(const Config& config);
     void shutdown();
     
-    // Gestion des clés
-    KeyPair generate_keypair(const std::string& algorithm);
-    void store_keypair(const KeyPair& keys, const std::string& user_id);
-    
     // Identité
-    std::string create_did(const std::vector<uint8_t>& public_key);
-    VerifiableCredential issue_credential(const std::string& holder_did,
-                                           const CredentialClaims& claims);
+    Identity create_identity();
+    std::vector<Contact> search_contacts(const std::string& query);
+    bool verify_identity(const std::string& did);
     
-    // Messagerie
-    bool send_message(const SecureMessage& message);
-    std::vector<SecureMessage> receive_messages();
+    // Sessions
+    SecureSession establish_secure_session(const std::string& peer_did);
+    std::vector<SecureSession> get_active_sessions();
     
-    // Chat de groupe
-    std::string create_group(const std::string& name,
-                              const std::vector<std::string>& members);
-    bool send_group_message(const std::string& group_id,
-                            const std::string& plaintext);
+    // Messages
+    EncryptedMessage encrypt_message(const SecureSession& session, const Message& message);
+    DecryptedMessage decrypt_message(const EncryptedMessage& encrypted, const SecureSession& session);
+    SendResult send_message(const EncryptedMessage& message);
+    ReceivedMessage receive_message();
     
-    // MPC Wallet
-    std::string create_mpc_wallet(uint32_t threshold, uint32_t total_shares);
-    SignedTransaction sign_transaction(const std::string& wallet_id,
-                                        const Transaction& tx);
+    // Groupes
+    SecureGroup create_secure_group(const std::string& name);
+    GroupMessage encrypt_group_message(const SecureGroup& group, const std::string& content);
+    SendResult send_group_message(const GroupMessage& message);
+    
+    // Appels
+    SecureCall start_secure_call(const std::string& peer_did);
+    SecureCall join_secure_call(const std::string& call_id);
+    
+    // Fichiers
+    EncryptedFile encrypt_file(const std::string& filepath, const SecureSession& session);
+    UploadResult upload_file(const EncryptedFile& file);
+    DownloadResult download_file(const std::string& file_id, const SecureSession& session);
+    
+    // Audit & Sécurité
+    SecurityAudit perform_security_audit();
+    ThreatReport generate_threat_report();
+    
+    // Utilitaires
+    std::string get_version();
+    bool health_check();
 };
-
-} // namespace EncryptedP2PChat
 ```
 
 ### 5.2 Structures de Données
 
 ```cpp
-struct SecurityConfig {
-    bool enable_pqc;
-    std::string pqc_kem_algorithm;
-    std::string pqc_sign_algorithm;
-    bool enable_hybrid_mode;
-    bool enable_double_ratchet;
-    bool enable_pq3;
-    bool enable_onion_routing;
-    bool enable_mixnet;
-    bool enable_metadata_protection;
-    bool enable_secure_enclave;
-    bool enable_decentralized_identity;
-    bool enable_verifiable_credentials;
-    bool enable_mpc_wallet;
+struct Config {
+    PQCAlgorithm pqc_algorithm;
+    SignatureAlgorithm signature_algorithm;
+    SymmetricCipher symmetric_cipher;
+    KeyExchangeProtocol key_exchange;
+    
+    IdentityType identity_type;
+    BlockchainNetwork blockchain_network;
+    VerificationMethod verification_method;
+    
+    TransportProtocol transport_protocol;
+    AnonymityLevel anonymity_level;
+    bool confidential_computing;
+    
+    int max_threads;
+    size_t memory_limit_mb;
+    int timeout_seconds;
+    
+    LogLevel log_level;
+    std::string log_file;
+    bool audit_trail;
 };
 
-struct SecureMessage {
-    std::string id;
+struct Identity {
+    std::string did;
+    std::string public_key;
+    std::string private_key_encrypted;
+    std::string recovery_phrase;
+    std::vector<std::string> verifiable_credentials;
+};
+
+struct SecureSession {
+    std::string session_id;
+    std::string peer_did;
+    std::string peer_public_key;
+    bool is_verified;
+    std::chrono::system_clock::time_point established_at;
+    EncryptionParameters encryption_params;
+};
+
+struct Message {
+    std::string content;
+    std::map<std::string, std::string> metadata;
+    std::vector<uint8_t> attachments;
     std::string sender_did;
-    std::string recipient_did;
-    std::string group_id;
+};
+
+struct EncryptedMessage {
     std::vector<uint8_t> ciphertext;
-    std::vector<uint8_t> signature;
-    uint64_t timestamp;
-};
-
-struct KeyPair {
-    std::vector<uint8_t> public_key;
-    std::vector<uint8_t> secret_key;
-};
-
-struct Transaction {
-    std::string to;
-    double amount;
-    std::string token;
-    uint64_t gas_limit;
+    std::vector<uint8_t> nonce;
+    std::vector<uint8_t> authentication_tag;
+    std::string session_id;
+    std::string recipient_did;
+    std::chrono::system_clock::time_point timestamp;
 };
 ```
 
 ---
 
-## 6. Dépannage
+## 6. CLI Reference
 
-### 6.1 Problèmes Courants
-
-| Problème | Solution |
-|----------|----------|
-| Erreur de compilation PQC | Vérifier OpenSSL 3.0+ et Libsodium |
-| Connexion P2P échouée | Vérifier pare-feu et ports |
-| Clés non chargées | Vérifier permissions des fichiers |
-| Messages non reçus | Vérifier synchronisation réseau |
-
-### 6.2 Logs
+### 6.1 Commandes Principales
 
 ```bash
-# Activer les logs détaillés
-export ENCRYPTED_P2P_LOG=debug
+# Initialisation
+secure-chat init
 
-# Fichier de log par défaut
-cat ~/.local/log/encrypted-p2p-chat/app.log
+# Création d'identité
+secure-chat identity create
+
+# Établissement de session
+secure-chat session establish bob@domain.com
+
+# Envoi de message
+secure-chat message send --to alice@domain.com "Hello world"
+
+# Réception de messages
+secure-chat message receive
+
+# Appel sécurisé
+secure-chat call start charlie@domain.com
+
+# Transfert de fichier
+secure-chat file upload document.pdf --to dave@domain.com
+
+# Audit de sécurité
+secure-chat audit security
+```
+
+### 6.2 Options Disponibles
+
+| Option | Description |
+|--------|-------------|
+| `--config <file>` | Fichier de configuration |
+| `--output <file>` | Fichier de sortie |
+| `--format <json/xml>` | Format de sortie |
+| `--verbose` | Mode verbeux |
+| `--log-level <level>` | Niveau de log |
+| `--pqc <algorithm>` | Algorithme PQ |
+| `--identity <type>` | Type d'identité |
+
+---
+
+## 7. Intégrations
+
+### 7.1 Web Integration
+
+```javascript
+// JavaScript SDK
+const chat = new SecureChat({
+    pqcAlgorithm: 'KYBER_1024',
+    transport: 'WEBRTC'
+});
+
+await chat.initialize();
+const session = await chat.establishSession('bob@domain.com');
+const message = await chat.encryptMessage(session, 'Hello');
+await chat.sendMessage(message);
+```
+
+### 7.2 Mobile Integration (iOS)
+
+```swift
+// Swift SDK
+let config = SecureChatConfig(
+    pqcAlgorithm: .kyber1024,
+    identityType: .did
+)
+
+let engine = SecureChatEngine(config: config)
+try await engine.initialize()
+
+let session = try await engine.establishSession(did: "bob@domain.com")
+let message = try await engine.encryptMessage(session, "Hello")
+try await engine.sendMessage(message)
+```
+
+### 7.3 Enterprise Integration
+
+#### SIEM Export
+```cpp
+// Export vers Splunk
+engine.export_to_siem(SIEMConfig{
+    type: SIEMType::SPLUNK,
+    endpoint: "https://splunk:8088",
+    token: "YOUR_TOKEN",
+    index: "secure_chat"
+});
+```
+
+#### LDAP/Active Directory
+```cpp
+// Intégration avec l'annuaire
+engine.configure_directory_integration({
+    type: DirectoryType::LDAP,
+    server: "ldap://company.com",
+    base_dn: "dc=company,dc=com",
+    bind_user: "service_account"
+});
 ```
 
 ---
 
-## 7. Sécurité
+## 8. Exemples Complets
 
-### 7.1 Bonnes Pratiques
+### 8.1 Application de Messagerie Sécurisée
 
-1. **Toujours utiliser le mode hybride** (PQC + Classique)
-2. **Activer le Double Ratchet** pour PFS
-3. **Utiliser Mixnet** pour l'anonymat
-4. **Stocker les clés** dans un enclave si possible
+```cpp
+#include "secure_chat.h"
+#include <iostream>
 
-### 7.2 Avertissements
-
-- ⚠️ Ne jamais partager sa clé secrète
-- ⚠️ Vérifier l'empreinte DID avant communication
-- ⚠️ Mettre à jour régulièrement vers la dernière version
-- ⚠️ Sauvegarder les clés dans un lieu sécurisé
+int main() {
+    std::cout << "=== Encrypted P2P Chat v25.0 ===" << std::endl;
+    
+    // Configuration
+    SecureChat::Config config;
+    config.pqc_algorithm = SecureChat::PQCAlgorithm::KYBER_1024;
+    config.signature_algorithm = SecureChat::SignatureAlgorithm::DILITHIUM_5;
+    config.identity_type = SecureChat::IdentityType::DID;
+    config.confidential_computing = true;
+    config.max_threads = 8;
+    
+    // Initialisation
+    SecureChat::ChatEngine engine;
+    if (!engine.initialize(config)) {
+        std::cerr << "Échec de l'initialisation" << std::endl;
+        return 1;
+    }
+    
+    // Création de l'identité
+    auto identity = engine.create_identity();
+    std::cout << "Identité créée: " << identity.did << std::endl;
+    
+    // Établissement de session
+    auto session = engine.establish_secure_session("bob@domain.com");
+    if (!session.is_verified()) {
+        std::cout << "Session non vérifiée - attente de vérification" << std::endl;
+        return 1;
+    }
+    
+    // Envoi de message
+    SecureChat::Message msg;
+    msg.content = "Bonjour, cette communication est protégée par la cryptographie post-quantique!";
+    msg.metadata["type"] = "urgent";
+    
+    auto encrypted = engine.encrypt_message(session, msg);
+    auto result = engine.send_message(encrypted);
+    
+    if (result.success) {
+        std::cout << "Message envoyé avec succès" << std::endl;
+    }
+    
+    return 0;
+}
+```
 
 ---
-
-**Version:** 25.0 | **Guide complet参见 ARCHITECTURE.md et PROTOCOLS.md**
+**Version**: v25.1 | **Date**: 15 février 2026
